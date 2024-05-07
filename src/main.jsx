@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client'
-
+import './tyylit/global.css';
 import RoutedApp from './App'
 
 

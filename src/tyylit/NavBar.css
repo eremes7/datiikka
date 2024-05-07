@@ -1,0 +1,26 @@
+/* NavBar.css */
+nav {
+    background-color: lightgray;
+    width: 100%;
+    text-align: left;
+    border-top: 1px solid gray;   /* Harmaa yläreuna */
+    border-bottom: 1px solid gray;  /* Harmaa alareuna */
+}
+
+.nav-link {
+    display: inline-block;
+    padding: 10px 20px;
+    color: black;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.nav-link:hover {
+    background-color: gray;
+    color: white;
+}
+.nav-link.active {
+    background-color: darkorange;
+    color: white;
+}
