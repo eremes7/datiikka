@@ -37,7 +37,8 @@ const App = () => {
   return (
     <>
     <Header />
-    <NavBar/>
+    <NavBar 
+      user={user}/>
     
     <AppRoutes
       user={user}
