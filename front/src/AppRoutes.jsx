@@ -3,6 +3,7 @@ import { Route, Routes, } from 'react-router-dom'
 import Main from './sivut/etusivu'
 import TestiSivu from './sivut/testiSivu'
 import Kirjautuminen from './komponentit/kirjautuminen'
+import LisääTeksti from './sivut/lisääTeksti'
 
 const AppRoutes = ({ user, setUser, errorMessage, setErrorMessage }) => {
   return (
@@ -18,6 +19,8 @@ const AppRoutes = ({ user, setUser, errorMessage, setErrorMessage }) => {
             setUser={setUser}
             errorMessage={errorMessage}
             setErrorMessage={setErrorMessage} />} />
+      <Route path="/Lisää teksti"
+        element={<LisääTeksti/>}/>
     </Routes>
 
   )
