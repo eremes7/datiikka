@@ -48,7 +48,7 @@ const Kirjautuminen = ({ user, setUser, errorMessage, setErrorMessage}) => {
         <Ilmoitukset message={errorMessage} />
         {!user && <form onSubmit={handleLogin}>
         <h2>Kirjautuminen</h2>
-        <div>--&gt;Käyttäjätunnus: remes remes, päästää lisäämään kappaleita.<br/>--&gt;Kappaleet ei siirry tietokantaan ja poistuu päivittämällä sivun</div>
+        <div>--&gt;Käyttäjätunnus: remes remes, päästää lisäämään kappaleita.</div>
         <br/>
           <div>
             <div>Käyttäjänimi</div>
