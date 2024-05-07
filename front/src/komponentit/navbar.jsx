@@ -9,12 +9,12 @@ const NavBar = ({ user }) => {
     } else {
         lista = [...lista, "Kirjautuminen"];
     }
-
+    
     return (
         <nav>
             {lista.map((sivu, index) => (
                 <NavLink
-                    to={`/${sivu.toLowerCase() === "etusivu" ? "" : sivu.toLowerCase()}`}
+                    to={sivu.toLowerCase() === "kirjaudu ulos" ? "/kirjaudu" : (sivu.toLowerCase() === "etusivu" ? "" : sivu.toLowerCase())}
                     key={index}
                     className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}
                 >
