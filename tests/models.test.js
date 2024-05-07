@@ -1,36 +1,36 @@
-const Kappale = require('../models/kappale')
+const Teksti = require('../models/teksti')
 
-describe('Kappale Model', () => {
+describe('Teksti Model', () => {
   test('Sisältää kaikki tarvittavat muuttujat', () => {
-    const kappale = new Kappale({
-      nimi: 'TestiKappale',
-      kappaleId: 1,
-      sanat: 'TestiSanat',
-      kategoria: 'TestiKategoria'
+    const newTeksti = new Teksti({
+      otsikko: 'kalja-arvostelu',
+      avain: 'kaljaaa',
+      sisältö: 'pröötsis, pröötsis, pröööööt',
+      kategoria: 'Isänmaa'
     })
 
-    expect(kappale.nimi).toBeDefined()
-    expect(kappale.kappaleId).toBeDefined()
-    expect(kappale.sanat).toBeDefined()
-    expect(kappale.kategoria).toBeDefined()
+    expect(newTeksti.otsikko).toBeDefined()
+    expect(newTeksti.avain).toBeDefined()
+    expect(newTeksti.sisältö).toBeDefined()
+    expect(newTeksti.kategoria).toBeDefined()
   })
 
-  test('Kappale muuttuu oikein JSONiksi', () => {
-    const kappale = new Kappale({
-      nimi: 'TestiKappale',
-      kappaleId: 1,
-      sanat: 'TestiSanat',
-      kategoria: 'TestiKategoria',
+  test('Teksti muuttuu oikein JSONiksi', () => {
+    const newTeksti = new Teksti({
+      otsikko: 'kalja-arvostelu',
+      avain: 'kaljaaa',
+      sisältö: 'pröötsis, pröötsis, pröööööt',
+      kategoria: 'Isänmaa'
     })
 
-    const jsonKappale = kappale.toJSON()
+    const jsonTeksti = newTeksti.toJSON()
 
-    expect(jsonKappale.nimi).toBeDefined()
-    expect(jsonKappale.kappaleId).toBeDefined()
-    expect(jsonKappale.sanat).toBeDefined()
-    expect(jsonKappale.kategoria).toBeDefined()
-    expect(typeof jsonKappale.id).toBe('string')
-    expect(jsonKappale._id).toBeUndefined()
-    expect(jsonKappale.__v).toBeUndefined()
+    expect(jsonTeksti.otsikko).toBeDefined()
+    expect(jsonTeksti.avain).toBeDefined()
+    expect(jsonTeksti.sisältö).toBeDefined()
+    expect(jsonTeksti.kategoria).toBeDefined()
+    expect(typeof jsonTeksti.id).toBe('string')
+    expect(jsonTeksti._id).toBeUndefined()
+    expect(jsonTeksti.__v).toBeUndefined()
   })
 })

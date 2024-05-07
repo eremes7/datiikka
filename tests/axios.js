@@ -1,20 +1,20 @@
-const Kappale = require('./models/kappale')
+const Teksti = require('./models/teksti')
 const axios = require('axios')
 
 const dummyKappaleet = require('./dummy')
+const Teksti = require('../models/teksti')
 
 console.log(dummyKappaleet)
 console.log('pröööt')
 
-const newKappale = new Kappale({
-  nimi: 'pröötbiisi',
-  id: 101,
-  alkuperäinen: 'pröörprööt',
-  sanat: 'pröötsis, pröötsis, pröööööt',
+const newTeksti = new Teksti({
+  otsikko: 'kalja-arvostelu',
+  avain: 'kaljaaa',
+  sisältö: 'pröötsis, pröötsis, pröööööt',
   kategoria: 'Isänmaa'
 })
 
-axios.post('http://localhost:3003/api/kappaleet', newKappale)
+axios.post('http://localhost:3003/api/tekstit', newTeksti)
   .then(response => {
     console.log('Vastaus palvelimelta:', response.data)
   })

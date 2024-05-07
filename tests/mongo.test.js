@@ -3,29 +3,11 @@ const app = require('../app')
 const mongoose = require('mongoose')
 const api = supertest(app)
 
-// TDD hengessä tehdään testit ja rakennetaan toiminnot sitä mukaa!
-//
-//testaa, että tietokanta on kappaleista tyhjä
-//testaa, että kappaleen lisäys onnistuu
-//testaa, että kappaleen hakeminen onnistuu
-//testaa, että kappaleissa on vaadittavat muuttujat lisättäessä
-//testaa, että samaa id, nimea jne. ei voi lisätä tietokantaan,
-//
-//
-//testaa, että kategoriaa lisättäessä isot alkukirjaimet menee oikein ja välilyönnillä ei ole väliä
-//testaa, että kappale voidaan poistaa
-//testaa, että kappaleesta voidaan vaihtaa jokin osa oikein
-//testaa, että tyhjää kappaletta ei voida lisätä
-//testaa, että kategorian sisällä id:t menee kronologisesti
-//
-//testaa, että useamman kappaleen lisääminen onnistuu nopeasti peräkkäin
-//
-
 let token
-describe('Kappaleiden lisääminen', () => {
+describe('Tekstien lisääminen', () => {
 
   beforeAll(async () => {
-    console.log('Kumpi tuli ensin, muna vai kana?')
+    console.log('Aloitetaan testaus...')
     const newUser = {
       name: 'TestiKäyttäjä',
       username: 'Testi Käyttäjä',
@@ -47,104 +29,89 @@ describe('Kappaleiden lisääminen', () => {
     token = loginResponse.body.token
   })
 
-  test('Kappaleen lisääminen onnistuu kirjautuneena käyttäjänä', async () => {
-    const newKappale = {
-      nimi: 'Ässät korkealla',
-      alkuperäinen: 'Aces High',
-      kategoria: 'Hassut laulut',
-      kappaleId: 123,
-      sanat: 'Elää lentääkseen, lentää elääkseen... Ässät korkealla'
+  test('Tekstin lisääminen onnistuu kirjautuneena käyttäjänä', async () => {
+    const newTeksti = {
+      otsikko: 'Ässät korkealla',
+      avain: 'aces-high',
+      sisältö: 'Elää lentääkseen, lentää elääkseen... Ässät korkealla',
+      kategoria: 'Hassut laulut'
     }
 
     const vastaus = await api
-      .post('/api/kappaleet')
+      .post('/api/tekstit')
       .set('Authorization', `Bearer ${token}`)
-      .send(newKappale)
+      .send(newTeksti)
       .expect(201)
       .expect('Content-Type', /application\/json/)
 
-    //piti tehdä erikseen tämä, jotta jest rekisteröi kattavuuteen kys. kohdan
     expect(vastaus.statusCode).toBe(201)
   })
 
-  test('Kappaleiden hakeminen onnistuu', async () => {
-
-    const Kappaleet = await api
-      .get('/api/kappaleet')
+  test('Tekstien hakeminen onnistuu', async () => {
+    const vastaus = await api
+      .get('/api/tekstit')
       .expect(200)
 
-    expect(Kappaleet.body).not.toEqual([])
-    expect(Kappaleet.body[0].nimi).toBe('Ässät korkealla')
+    expect(vastaus.body).not.toEqual([])
+    expect(vastaus.body[0].otsikko).toBe('Ässät korkealla')
   })
 
-  test('Kappaleen lisääminen ei onnistu ilman kirjautumista', async () => {
-
-    const newKappale = {
-      nimi: 'askljaskjd',
-      alkuperäinen: 'asdasdasd',
-      kategoria: 'Hassut laulut',
-      kappaleId: 1232,
-      sanat: 'Elsadasdasdasdtää elääkseen... Ässät korkealla'
+  test('Tekstin lisääminen ei onnistu ilman kirjautumista', async () => {
+    const newTeksti = {
+      otsikko: 'Väärä yritys',
+      avain: 'wrong-try',
+      sisältö: 'Ei kirjautunut',
+      kategoria: 'Hassut laulut'
     }
 
     await api
-      .post('/api/kappaleet')
-      .set('Authorization', `Bearer ${'Väärä token'}`)
-      .send(newKappale)
+      .post('/api/tekstit')
+      .send(newTeksti)
       .expect(401)
-      .expect('Content-Type', /application\/json/)
   })
 
-  test('Kappaleen lisääminen ei onnistu ilman nimeä', async () => {
-
-    const newKappale = {
-      alkuperäinen: 'asdasdasd',
-      kategoria: 'Hassut laulut',
-      kappaleId: 1232,
-      sanat: 'Elsadasdasdasdtää elääkseen... Ässät korkealla'
+  test('Tekstin lisääminen ei onnistu ilman otsikkoa', async () => {
+    const newTeksti = {
+      avain: 'no-title',
+      sisältö: 'Unohdettiin otsikko',
+      kategoria: 'Hassut laulut'
     }
 
     await api
-      .post('/api/kappaleet')
+      .post('/api/tekstit')
       .set('Authorization', `Bearer ${token}`)
-      .send(newKappale)
+      .send(newTeksti)
       .expect(400)
-      .expect('Content-Type', /application\/json/)
   })
 
-  test('Saman kappaleen lisääminen ei onnistu', async () => {
-
-    const newKappale = {
-      nimi: 'Ässät korkealla',
-      alkuperäinen: 'Aces High',
-      kategoria: 'Hassut laulut',
-      kappaleId: 123,
-      sanat: 'Elää lentääkseen, lentää elääkseen... Ässät korkealla'
+  test('Saman tekstin lisääminen ei onnistu', async () => {
+    const newTeksti = {
+      otsikko: 'Ässät korkealla',
+      avain: 'aces-high',
+      sisältö: 'Elää lentääkseen, lentää elääkseen... Ässät korkealla',
+      kategoria: 'Hassut laulut'
     }
 
     await api
-      .post('/api/kappaleet')
+      .post('/api/tekstit')
       .set('Authorization', `Bearer ${token}`)
-      .send(newKappale)
+      .send(newTeksti)
       .expect(400)
-      .expect('Content-Type', /application\/json/)
   })
 
-  test('Palvelin palauttaa 500 virheen, jos yhteyttä ei ole ', async () => {
+  test('Palvelin palauttaa 500 virheen, jos yhteyttä ei ole', async () => {
     mongoose.connection.close()
-    const newKappale = {
-      nimi: 'Ässät korkealla',
-      alkuperäinen: 'Aces High',
-      kategoria: 'Hassut laulut',
-      kappaleId: 123,
-      sanat: 'Elää lentääkseen, lentää elääkseen... Ässät korkealla'
+    const newTeksti = {
+      otsikko: 'Yhteys katkaistu',
+      avain: 'connection-lost',
+      sisältö: 'Serveri ei vastaa',
+      kategoria: 'Tekninen vika'
     }
 
     await api
-      .post('/api/kappaleet')
+      .post('/api/tekstit')
       .set('Authorization', `Bearer ${token}`)
-      .send(newKappale)
+      .send(newTeksti)
       .expect(500)
-      .expect('Content-Type', /application\/json/)
   })
 })

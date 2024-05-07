@@ -1,5 +1,5 @@
 const User = require('../models/user')
-const Kappaleet = require('../models/kappale')
+const Tekstit = require('../models/kappale')
 
 
 const usersInDb = async () => {
@@ -7,12 +7,12 @@ const usersInDb = async () => {
   return users.map(u => u.toJSON())
 }
 
-const kappaleetInDb = async () => {
-  const kappaleet = await Kappaleet.find({})
-  return kappaleet.map(kappale => kappale.toJSON())
+const tekstitInDb = async () => {
+  const tekstit = await Tekstit.find({})
+  return tekstit.map(teksti => tekstit.toJSON())
 }
 
 module.exports = {
   usersInDb,
-  kappaleetInDb
+  tekstitInDb 
 }

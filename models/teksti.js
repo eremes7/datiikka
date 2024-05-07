@@ -1,14 +1,13 @@
 const mongoose = require('mongoose')
 
-const kappaleSchema = mongoose.Schema({
-  nimi: String,
-  alkuperäinen: String,
-  kappaleId: Number,
+const tekstiSchema = mongoose.Schema({
+  otsikko: String,
+  avain: String,
   kategoria: String,
-  sanat: String
+  sisältö: String
 })
 
-kappaleSchema.set('toJSON', {
+tekstiSchema.set('toJSON', {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString()
     delete returnedObject._id
@@ -16,4 +15,4 @@ kappaleSchema.set('toJSON', {
   }
 })
 
-module.exports = mongoose.model('Kappale', kappaleSchema)
+module.exports = mongoose.model('Teksti', tekstiSchema)
