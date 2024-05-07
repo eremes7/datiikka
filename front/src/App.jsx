@@ -34,13 +34,11 @@ const App = () => {
     }
   }, [])
 
-
-
   return (
     <>
     <Header />
     <NavBar/>
-    <Kirjautuminen/>
+    
     <AppRoutes
       user={user}
       setUser={setUser}

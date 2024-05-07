@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import '../tyylit/NavBar.css';
 
 const NavBar = () => {
-    const lista = ["Etusivu", "testiSivut", "Lisää avain"];
+    const lista = ["Etusivu", "testiSivut", "Lisää avain","Kirjautuminen"];
     return (
         <nav>
             {lista.map((sivu, index) => (
