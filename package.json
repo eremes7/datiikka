@@ -4,7 +4,6 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "lint": "eslint .",
     "dev": "cross-env NODE_END=development nodemon index.js",
     "test": "jest --verbose --runInBand --coverage",
     "test:no-coverage": "jest --verbose --runInBand",
