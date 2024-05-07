@@ -19,7 +19,7 @@ app.use(express.json())
 app.use(middleware.requestLogger)
 
 
-app.use('/api/kappaleet', tekstiRouter)
+app.use('/api/tekstit', tekstiRouter)
 app.use('/api/login', loginRouter)
 app.use('/api/users', usersRouter)
 
