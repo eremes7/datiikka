@@ -9,7 +9,7 @@
     "test": "jest --verbose --runInBand --coverage",
     "test:no-coverage": "jest --verbose --runInBand",
     "build:ui": "rm -rf dist && cd front && npm run build && cp -r dist ../",
-    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push -u origin master"
+    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push -u origin main"
   },
   "author": "",
   "license": "ISC",
