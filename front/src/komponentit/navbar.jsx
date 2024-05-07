@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import '../tyylit/NavBar.css';
 
 const NavBar = ({ user }) => {
-    const lista = ["Etusivu", "testiSivut", "Lisää avain","Kirjautuminen"];
+    let lista = ["Etusivu", "testiSivut", "Lisää avain","Kirjautuminen"];
 
     if (user) {
         lista = [...lista, "Lisää teksti", "Kirjaudu ulos"];
