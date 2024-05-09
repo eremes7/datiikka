@@ -17,8 +17,6 @@ const Kirjautuminen = ({ user, setUser, errorMessage, setErrorMessage}) => {
             'loggedWebKaluAppUser', JSON.stringify(user)
           )
           haltijaPalvelu.setToken(user.token)
-          console.log("asdasd asd",user.token)
-          console.log(user)
           setUser(user)
           setUsername(username)
           setPassword(password)
@@ -28,6 +26,7 @@ const Kirjautuminen = ({ user, setUser, errorMessage, setErrorMessage}) => {
             setErrorMessage(null)
           }, 5000)
         }
+        console.log(user)
         setUsername('')
         setPassword('')
       }
