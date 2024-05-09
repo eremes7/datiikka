@@ -18,6 +18,7 @@ const Kirjautuminen = ({ user, setUser, errorMessage, setErrorMessage}) => {
           )
           haltijaPalvelu.setToken(user.token)
           console.log("asdasd asd",user.token)
+          console.log(user)
           setUser(user)
           setUsername(username)
           setPassword(password)
