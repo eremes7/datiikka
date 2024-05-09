@@ -1,5 +1,5 @@
 import axios from 'axios'
-const baseUrl = '/api/kappaleet'
+const baseUrl = '/api/tekstit'
 
 let token = null
 
