@@ -14,7 +14,7 @@ const Kirjautuminen = ({ user, setUser, errorMessage, setErrorMessage}) => {
             username: username, password: password
           })
           window.localStorage.setItem(
-            'loggedWebKaluAppUser', JSON.stringify(user)
+            'loggedDatiikkaAppUser', JSON.stringify(user)
           )
           haltijaPalvelu.setToken(user.token)
           setUser(user)
@@ -26,7 +26,6 @@ const Kirjautuminen = ({ user, setUser, errorMessage, setErrorMessage}) => {
             setErrorMessage(null)
           }, 5000)
         }
-        console.log(user)
         setUsername('')
         setPassword('')
       }
