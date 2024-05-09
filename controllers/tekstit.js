@@ -15,6 +15,7 @@ tekstiRouter.get('/', async (request, response) => {
 tekstiRouter.post('/', async (request, response) => {
   try {
     const body = request.body
+    console.log('body:', body)
 
     let decodedToken = null 
     try {
