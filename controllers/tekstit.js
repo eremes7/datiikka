@@ -18,8 +18,8 @@ tekstiRouter.post('/', async (request, response) => {
 
     let decodedToken = null 
     try {
+      console.log(middleWare.tokenExtractor(request))
       decodedToken = jwt.verify(middleWare.tokenExtractor(request), process.env.SECRET)
-      console.log('decodedToken:', decodedToken)
     } catch (error) {
       return response.status(401).json({ error: 'token missing or invalid' })
     }
