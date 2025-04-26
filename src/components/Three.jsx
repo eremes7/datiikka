@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
 import CanvasTools from './CanvasTools'
 import { useFrame, useThree } from '@react-three/fiber'
-import { ModelWorkshop } from './modelWorkshop'
-import * as THREE from 'three'
-import { modelList } from './modelWorkshop'
+import { ModelWorkshop, modelList } from './modelWorkshop'
+
 import { Line } from '@react-three/drei'
+import { GridHelper } from 'three'
 
 
 function Room({ backWallWidth }) {
@@ -82,25 +82,44 @@ function ClickPlane({ onClick, onHover }) {
         </mesh>
     )
 }
-function BackWallPlane({ backWallWidth, backWallHeight, onHover, onClick }) {
+export function BackWallPlane({
+    backWallWidth,
+    backWallHeight,
+    onHover,
+    onClick,
+    showGrid = false,    // new prop
+}) {
     return (
-        <mesh
-            position={[0, backWallHeight / 2, -1.3]}
-            rotation={[0, 0, 0]}
-            onPointerMove={e => {
-                e.stopPropagation()
-                const p = e.point.clone()
-                onHover([p.x, p.y, p.z])
-            }}
-            onClick={e => {
-                e.stopPropagation()
-                const p = e.point.clone()
-                onClick({ x: p.x, y: p.y, z: p.z })
-            }}
-        >
-            <planeGeometry args={[backWallWidth, backWallHeight]} />
-            <meshBasicMaterial transparent opacity={0} />
-        </mesh>
+        <group position={[0, backWallHeight / 2, -1.3]}>
+            {/* always-there click mesh */}
+            <mesh
+                onPointerMove={e => {
+                    e.stopPropagation()
+                    const { x, y, z } = e.point
+                    onHover([x, y, z])
+                }}
+                onClick={e => {
+                    e.stopPropagation()
+                    const { x, y, z } = e.point
+                    onClick({ x, y, z })
+                }}
+            >
+                <planeGeometry args={[backWallWidth, backWallHeight]} />
+                <meshBasicMaterial transparent opacity={0} />
+            </mesh>
+
+            {showGrid && (
+                <gridHelper
+                    args={[
+                        50,
+                        200,
+                        0x444444
+                    ]}
+                    rotation={[Math.PI / 2, 0, 0]}
+                    position={[0, 0, 0.0452]}
+                />
+            )}
+        </group>
     )
 }
 function ComponentPalette({ models, onSelect }) {
@@ -121,9 +140,52 @@ function ComponentPalette({ models, onSelect }) {
     )
 }
 
+
+function findClosestAttachment(hoverPosition, placedModels) {
+    let closestPoint = null
+    let closestDistance = Infinity
+
+    for (const model of placedModels) {
+        for (const point of model.attachments) {
+            const dx = hoverPosition[0] - point[0]
+            const dy = hoverPosition[1] - point[1]
+            const dz = hoverPosition[2] - point[2]
+            const distance = Math.sqrt(dx * dx + dy * dy + dz * dz)
+
+            if (distance < closestDistance) {
+                closestDistance = distance
+                closestPoint = point
+            }
+        }
+    }
+
+    return closestPoint
+}
+function PlacementGrid(){
+    return(
+        <gridHelper args={[50,200]}/>
+    )
+}
+function findPreviewAnchor(hoverPosition) {
+    const snap = v => Math.round(v / 220) * 20
+
+    const dx = Math.abs(hoverPosition[0] - snap(hoverPosition[0]))
+    const dy = hoverPosition[1]
+    const dz = Math.abs(hoverPosition[2] - snap(hoverPosition[2]))
+
+
+
+    if (dx < dz) {
+
+        return [snap(hoverPosition[0]), hoverPosition[1], hoverPosition[2]]
+    } else {
+
+        return [hoverPosition[0], hoverPosition[1], snap(hoverPosition[2])]
+    }
+
+}
 export default function ShelfConfigurator() {
     const [backWallWidth, setBackWallWidth] = useState(5)
-    const [showGrid, setShowGrid] = useState(true)
     const [coords, setCoords] = useState([0, 0, 0])
     const [models, setModels] = useState()
     const [placedModels, setPlacedModels] = useState([])
@@ -136,20 +198,34 @@ export default function ShelfConfigurator() {
         setModels(modelList)
     }, [])
 
-    for(const juttu of placedModels){
-        console.log("sdfg", juttu.attachments)
-        for(const piste of juttu.attachments){
-            piste[0]=juttu.position[0]
-            piste[2]=juttu.position[2]
-        }
-    }
-    console.log("KAKKAA LUMELLA :DDD")
-
-    console.log("HAHA ET OSAA :DD")
     useEffect(() => {
-        updateModelAttachments()
+        setPlacedModels(prev => {
+            const updatedModels = prev.map(juttu => {
+                const updatedAttachments = juttu.attachments.map(piste => ([
+                    juttu.position[0] + piste[0],
+                    piste[1],
+                    juttu.position[2] + piste[2]
+                ]))
+                return { ...juttu, attachments: updatedAttachments }
+            })
+            if (JSON.stringify(prev) === JSON.stringify(updatedModels)) {
+                return prev
+            }
+            return updatedModels
+        })
+    }, [placedModels])
+
+
+
+
+    const closestAttachment = React.useMemo(() => {
+        if (!selectedPreview) return null
+        return findClosestAttachment(hoverPosition, placedModels)
+    }, [hoverPosition, placedModels, selectedPreview])
+
+    useEffect(() => {
         if (selectedPreview) {
-            selectedPreview.position = hoverPosition
+            setSelectedPreview(prevState => ({ ...prevState, position: findPreviewAnchor(hoverPosition) }))
         }
     }, [hoverPosition])
 
@@ -157,34 +233,40 @@ export default function ShelfConfigurator() {
         setSelectedModel(model)
         setSelectedPreview({
             component: model,
-            position: hoverPosition,
+            position: findPreviewAnchor(hoverPosition),
             scale: [1, 1, 1],
             id: Date.now() + Math.random(),
             attachments: [],
         })
     }
     function handleCanvasClick(point) {
-        if (!selectedModel || !selectedPreview) return
+        if (!selectedModel || !selectedPreview) return;
 
-        setPlacedModels((prev) => [
-            ...prev,
-            {
-                ...selectedModel,
-                id: Date.now() + Math.random(),
-                position: [point.x, point.y, -1.3],
-                scale: [1, 1, 1],
-                attachments: selectedModel.attachments || [],
-            },
-        ])
+        const basePosition = selectedModel.isSupport
+            ? [point.x, point.y, -1.3]
+            : closestAttachment || [findPreviewAnchor(hoverPosition)];
+        console.log(selectedModel.attachments)
+        const newModel = {
+            ...selectedModel,
+            id: Date.now() + Math.random(),
+            position: basePosition,
+            scale: [1, 1, 1],
+            attachments: (selectedModel.attachments || []).map(piste => ([
+                basePosition[0] + piste[0],
+                piste[1],
+                basePosition[2] + piste[2]
+            ])),
+        };
 
-        setSelectedModel(null)
-        setSelectedPreview(null)
+        setPlacedModels(prev => [...prev, newModel]);
+
+        setSelectedModel(null);
+        setSelectedPreview(null);
     }
 
     function updateModelAttachments() {
         setPlacedModels(prevModels => prevModels.map(model => {
             const modelRef = refs.current[model.id]
-            console.log("ASKLÖT", modelRef.getAttachments)
             if (modelRef && modelRef.getAttachments) {
 
                 return {
@@ -208,7 +290,6 @@ export default function ShelfConfigurator() {
                 <CameraCoords setCoords={setCoords} />
                 <CanvasTools
                     backWallWidth={backWallWidth}
-                    showGrid={showGrid}
                     setCoords={setCoords}
                 />
 
@@ -217,7 +298,9 @@ export default function ShelfConfigurator() {
                     backWallHeight={5}
                     onHover={pos => setHoverPosition(pos)}
                     onClick={pt => handleCanvasClick(pt)}
+                    showGrid={!!(selectedPreview && selectedModel)}
                 />
+                {selectedPreview && selectedModel && <PlacementGrid />}
 
 
                 <ClickPlane
@@ -226,12 +309,19 @@ export default function ShelfConfigurator() {
                 />
 
                 {selectedPreview && selectedModel && (
-
                     <ModelWorkshop
                         model={selectedPreview.component}
                         position={selectedPreview.position}
                         scale={selectedPreview.scale}
-                        onReady={() => { }}
+                        onReady={({ attachments }, id) => {
+                            // only update if it’s the same preview instance
+                            setSelectedPreview(prev =>
+                                prev.id === id
+                                    ? { ...prev, attachments }
+                                    : prev
+                            )
+                        }}
+                        id={selectedPreview.id}
                     />
                 )}
                 {selectedPreview && selectedModel && (
@@ -240,7 +330,6 @@ export default function ShelfConfigurator() {
 
                 {placedModels.map((model) =>
                     model.attachments && model.attachments.map((point, index) => (
-                        console.log("pröööt",point),
                         <Line
                             key={`${model.id}-${index}`}
                             points={[[0, 0, 0], point]}
@@ -249,7 +338,9 @@ export default function ShelfConfigurator() {
                         />
                     ))
                 )}
-
+                {selectedPreview && closestAttachment && (
+                    <Line points={[hoverPosition, closestAttachment]} color="green" lineWidth={2} />
+                )}
                 {placedModels.map((model) => (
                     <ModelWorkshop
                         key={model.id}

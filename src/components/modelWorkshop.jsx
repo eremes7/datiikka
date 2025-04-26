@@ -31,10 +31,14 @@ export const ModelWorkshop = forwardRef(({ model, attachments, position, scale, 
     const attachmentPoints = useRef([])
     const groupRef = useRef()
 
+    
     useEffect(() => {
         const obj = (ref && ref.current) || groupRef.current
         if (!obj) return
     
+        
+
+
         attachmentPoints.current = []
     
         for (const obj of model.component().props.children || []) {
