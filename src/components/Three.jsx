@@ -143,8 +143,9 @@ export default function ShelfConfigurator() {
             piste[2]=juttu.position[2]
         }
     }
+    console.log("KAKKAA LUMELLA :DDD")
 
-
+    console.log("HAHA ET OSAA :DD")
     useEffect(() => {
         updateModelAttachments()
         if (selectedPreview) {
