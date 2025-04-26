@@ -141,9 +141,7 @@ export default function ShelfConfigurator() {
         for(const piste of juttu.attachments){
             piste[0]=juttu.position[0]
             piste[2]=juttu.position[2]
-
         }
-        
     }
 
 

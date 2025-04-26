@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "save": "git add . && git commit -m 'save' && git push"
+    "save": "git add . && git commit -m 'save' && git push",
+    "load": "git pull"
   },
   "dependencies": {
     "@react-three/drei": "^10.0.6",
