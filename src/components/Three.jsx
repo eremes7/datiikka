@@ -162,40 +162,7 @@ function findClosestAttachment(selectedPreview, placedModels) {
     return closestPoint
 }
 
-function findClosestPreviewAttachment(selectedPreview, placedModels) {
-    if (!selectedPreview?.attachments?.length || !placedModels?.length) {
-        return null;
-    }
-    console.log("asdgasdg", selectedPreview)
-    console.log("asdgasdgasgdasdg", placedModels)
 
-    for (const juttu of selectedPreview.attachments) {
-        console.log(juttu)
-    }
-
-    let best = {
-        dist: Infinity,
-        pair: null
-    };
-
-    for (const pa of selectedPreview.attachments) {
-        for (const model of placedModels) {
-            for (const pb of model.attachments || []) {
-                const dx = pa[0] - pb[0];
-                const dy = pa[1] - pb[1];
-                const dz = pa[2] - pb[2];
-                const d = Math.hypot(dx, dy, dz);
-
-                if (d < best.dist) {
-                    best.dist = d;
-                    best.pair = [pa, pb];
-                }
-            }
-        }
-    }
-
-    return best.pair;
-}
 
 function PlacementGrid() {
     return (
@@ -216,6 +183,37 @@ function findPreviewAnchor(hoverPosition) {
     }
 
 }
+
+function findNewHome(selectedPreview, worldAttachments, placedModels) {
+    let best = {
+        dist: Infinity,
+        pair: null,
+        place: null
+    };
+
+    for (const pa of worldAttachments) {
+        for (const model of placedModels) {
+            for (const pb of model.attachments || []) {
+                console.log("JA TÄMÄN :", model)
+                const dx = pa[0] - pb[0];
+                const dy = pa[1] - pb[1];
+                const dz = pa[2] - pb[2];
+                const d = Math.hypot(dx, dy, dz);
+
+                if (d < best.dist) {
+                    best.dist = d;
+                    best.pair = [pa, pb];
+                }
+            }
+        }
+    }
+
+    best.place = [best.pair[1][0] + selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][0], best.pair[1][1], best.pair[1][2] - selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][2]]
+    console.log(best.place)
+
+    console.log("tuen piste", best.pair[1], " ja uuden piste ", best.pair[0])
+    return best.place;
+}
 export default function ShelfConfigurator() {
     const [backWallWidth, setBackWallWidth] = useState(5)
     const [coords, setCoords] = useState([0, 0, 0])
@@ -229,6 +227,8 @@ export default function ShelfConfigurator() {
     useEffect(() => {
         setModels(modelList)
     }, [])
+
+    /*
 
     useEffect(() => {
         if (!selectedPreview?.attachments) return;
@@ -244,29 +244,28 @@ export default function ShelfConfigurator() {
     }, [hoverPosition]);
 
     useEffect(() => {
+        if (selectedPreview) {
+            setSelectedPreview(prevState => ({ ...prevState, position: findPreviewAnchor(hoverPosition) }))
+        }
+    }, [hoverPosition])
+*/
+    /*
+    useEffect(() => {
         setPlacedModels(prev => {
             const updatedModels = prev.map(juttu => {
                 const updatedAttachments = juttu.attachments.map(piste => ([
                     juttu.position[0] + piste[0],
                     piste[1],
-                    juttu.position[2] + piste[2]
+                    juttu.position[2]
                 ]))
+                console.log(juttu)
                 return { ...juttu, attachments: updatedAttachments }
             })
-            if (JSON.stringify(prev) === JSON.stringify(updatedModels)) {
-                return prev
-            }
+            
             return updatedModels
         })
-    }, [placedModels])
-
-    useEffect(() => {
-        if (selectedPreview) {
-            setSelectedPreview(prevState => ({ ...prevState, position: findPreviewAnchor(hoverPosition) }))
-        }
-    }, [hoverPosition])
-
-
+    }, [placedModels.length])
+*/
 
 
 
@@ -293,18 +292,26 @@ export default function ShelfConfigurator() {
 
         const basePosition = selectedModel.isSupport
             ? [point.x, point.y, -0.3]
-            : closestAttachment || findPreviewAnchor(hoverPosition);
+            : hoverPosition
+        //closestAttachment || findPreviewAnchor(hoverPosition);
+
+
+        const pieceDimOffset = selectedPreview.attachments || [];
+
+        const worldAttachments = pieceDimOffset.map(off => ([
+            basePosition[0] + off[0],
+            basePosition[1] + off[1],
+            basePosition[2] + off[2],
+        ]));
+
+
 
         const newModel = {
             ...selectedModel,
             id: Date.now() + Math.random(),
-            position: basePosition,
+            position: selectedModel.isSupport ? [point.x, point.y, -0.3] : findNewHome(selectedPreview, worldAttachments, placedModels),
             scale: [1, 1, 1],
-            attachments: (selectedModel.attachments || []).map(piste => ([
-                basePosition[0] + piste[0],
-                piste[1],
-                basePosition[2] + piste[2]
-            ])),
+            attachments: worldAttachments,
         };
 
         setPlacedModels(prev => [...prev, newModel]);
@@ -312,7 +319,8 @@ export default function ShelfConfigurator() {
         setSelectedPreview(null);
     }
 
-    function updateModelAttachments() {
+    /*function updateModelAttachments() {
+        console.log("olenko se minä muahaha")
         setPlacedModels(prevModels => prevModels.map(model => {
             const modelRef = refs.current[model.id]
             if (modelRef && modelRef.getAttachments) {
@@ -324,7 +332,7 @@ export default function ShelfConfigurator() {
             }
             return model
         }))
-    }
+    }*/
 
     return (
         <div className="relative w-[1200px] h-[800px] bg-gray-100">
@@ -382,7 +390,7 @@ export default function ShelfConfigurator() {
                 {selectedPreview && selectedModel && (
                     <ModelWorkshop
                         model={selectedPreview.component}
-                        position={selectedPreview.position}
+                        position={hoverPosition}
                         scale={selectedPreview.scale}
                         onReady={({ attachments }, id) => {
                             setSelectedPreview(prev =>
@@ -402,10 +410,10 @@ export default function ShelfConfigurator() {
                         position={model.position}
                         scale={model.scale}
                         ref={el => { if (el) refs.current[model.id] = el }}
-                        onReady={(data) => {
-                            model.attachments = data.attachments
-                            updateModelAttachments()
-                        }}
+                    //onReady={(data) => {
+                    //  model.attachments = data.attachments
+                    //   //updateModelAttachments()
+                    //}}
                     />
                 ))}
 
