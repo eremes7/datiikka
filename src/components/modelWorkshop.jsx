@@ -35,9 +35,6 @@ export const ModelWorkshop = forwardRef(({ model, attachments, position, scale, 
     useEffect(() => {
         const obj = (ref && ref.current) || groupRef.current
         if (!obj) return
-    
-        
-
 
         attachmentPoints.current = []
     

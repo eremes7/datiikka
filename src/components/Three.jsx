@@ -3,9 +3,8 @@ import { Canvas } from '@react-three/fiber'
 import CanvasTools from './CanvasTools'
 import { useFrame, useThree } from '@react-three/fiber'
 import { ModelWorkshop, modelList } from './modelWorkshop'
-
 import { Line } from '@react-three/drei'
-import { GridHelper } from 'three'
+
 
 
 function Room({ backWallWidth }) {
@@ -15,7 +14,7 @@ function Room({ backWallWidth }) {
                 <planeGeometry args={[2 + backWallWidth, 5]} />
                 <meshStandardMaterial color="#aaaaaa" />
             </mesh>
-            <mesh rotation={[0, 0, 0]} position={[0, 2.5, -1.5]}>
+            <mesh rotation={[0, 0, 0]} position={[0, 2.5, -0.5]}>
                 <planeGeometry args={[2 + backWallWidth, 5]} />
                 <meshStandardMaterial color="#cccccc" />
             </mesh>
@@ -90,7 +89,7 @@ export function BackWallPlane({
     showGrid = false,    // new prop
 }) {
     return (
-        <group position={[0, backWallHeight / 2, -1.3]}>
+        <group position={[0, backWallHeight / 2, -0.4]}>
             {/* always-there click mesh */}
             <mesh
                 onPointerMove={e => {
@@ -141,15 +140,16 @@ function ComponentPalette({ models, onSelect }) {
 }
 
 
-function findClosestAttachment(hoverPosition, placedModels) {
+function findClosestAttachment(selectedPreview, placedModels) {
     let closestPoint = null
     let closestDistance = Infinity
+    if (!selectedPreview?.attachments) return [3, 4, 5];
 
     for (const model of placedModels) {
         for (const point of model.attachments) {
-            const dx = hoverPosition[0] - point[0]
-            const dy = hoverPosition[1] - point[1]
-            const dz = hoverPosition[2] - point[2]
+            const dx = selectedPreview.attachments[0] - point[0]
+            const dy = selectedPreview.attachments[1] - point[1]
+            const dz = selectedPreview.attachments[2] - point[2]
             const distance = Math.sqrt(dx * dx + dy * dy + dz * dz)
 
             if (distance < closestDistance) {
@@ -161,22 +161,54 @@ function findClosestAttachment(hoverPosition, placedModels) {
 
     return closestPoint
 }
-function PlacementGrid(){
-    return(
-        <gridHelper args={[50,200]}/>
+
+function findClosestPreviewAttachment(selectedPreview, placedModels) {
+    if (!selectedPreview?.attachments?.length || !placedModels?.length) {
+        return null;
+    }
+    console.log("asdgasdg", selectedPreview)
+    console.log("asdgasdgasgdasdg", placedModels)
+
+    for (const juttu of selectedPreview.attachments) {
+        console.log(juttu)
+    }
+
+    let best = {
+        dist: Infinity,
+        pair: null
+    };
+
+    for (const pa of selectedPreview.attachments) {
+        for (const model of placedModels) {
+            for (const pb of model.attachments || []) {
+                const dx = pa[0] - pb[0];
+                const dy = pa[1] - pb[1];
+                const dz = pa[2] - pb[2];
+                const d = Math.hypot(dx, dy, dz);
+
+                if (d < best.dist) {
+                    best.dist = d;
+                    best.pair = [pa, pb];
+                }
+            }
+        }
+    }
+
+    return best.pair;
+}
+
+function PlacementGrid() {
+    return (
+        <gridHelper args={[50, 200]} />
     )
 }
+
 function findPreviewAnchor(hoverPosition) {
-    const snap = v => Math.round(v / 220) * 20
+    const snap = v => Math.round(v / 0.2) * 0.2
 
     const dx = Math.abs(hoverPosition[0] - snap(hoverPosition[0]))
-    const dy = hoverPosition[1]
     const dz = Math.abs(hoverPosition[2] - snap(hoverPosition[2]))
-
-
-
     if (dx < dz) {
-
         return [snap(hoverPosition[0]), hoverPosition[1], hoverPosition[2]]
     } else {
 
@@ -199,6 +231,19 @@ export default function ShelfConfigurator() {
     }, [])
 
     useEffect(() => {
+        if (!selectedPreview?.attachments) return;
+
+        setSelectedPreview(prev => ({
+            ...prev,
+            attachments: prev.attachments.map(offset => ([
+                prev.position[0] + offset[0],
+                prev.position[1] + offset[1],
+                prev.position[2] + offset[2],
+            ])),
+        }));
+    }, [hoverPosition]);
+
+    useEffect(() => {
         setPlacedModels(prev => {
             const updatedModels = prev.map(juttu => {
                 const updatedAttachments = juttu.attachments.map(piste => ([
@@ -215,19 +260,23 @@ export default function ShelfConfigurator() {
         })
     }, [placedModels])
 
-
-
-
-    const closestAttachment = React.useMemo(() => {
-        if (!selectedPreview) return null
-        return findClosestAttachment(hoverPosition, placedModels)
-    }, [hoverPosition, placedModels, selectedPreview])
-
     useEffect(() => {
         if (selectedPreview) {
             setSelectedPreview(prevState => ({ ...prevState, position: findPreviewAnchor(hoverPosition) }))
         }
     }, [hoverPosition])
+
+
+
+
+
+    const closestAttachment = React.useMemo(() => {
+        if (!selectedPreview) return null
+        return findClosestAttachment(selectedPreview, placedModels)
+    }, [hoverPosition, placedModels, selectedPreview])
+
+
+
 
     async function handleModelSelect(model) {
         setSelectedModel(model)
@@ -240,12 +289,12 @@ export default function ShelfConfigurator() {
         })
     }
     function handleCanvasClick(point) {
-        if (!selectedModel || !selectedPreview) return;
+        if (!selectedModel || !selectedPreview?.attachments) return;
 
         const basePosition = selectedModel.isSupport
-            ? [point.x, point.y, -1.3]
-            : closestAttachment || [findPreviewAnchor(hoverPosition)];
-        console.log(selectedModel.attachments)
+            ? [point.x, point.y, -0.3]
+            : closestAttachment || findPreviewAnchor(hoverPosition);
+
         const newModel = {
             ...selectedModel,
             id: Date.now() + Math.random(),
@@ -259,7 +308,6 @@ export default function ShelfConfigurator() {
         };
 
         setPlacedModels(prev => [...prev, newModel]);
-
         setSelectedModel(null);
         setSelectedPreview(null);
     }
@@ -284,7 +332,7 @@ export default function ShelfConfigurator() {
             <ComponentPalette models={models} onSelect={handleModelSelect} />
             <BackWallWidthControl backWallWidth={backWallWidth} setBackWallWidth={setBackWallWidth} />
             <Canvas
-                camera={{ position: [-2, 2, 3.3], fov: 50 }}
+                camera={{ position: [-2, 2.5, 3.3], fov: 50 }}
                 className="relative outline top-0 left-60 right-80 max-w-4/6 max-h-4/6">
                 <Room backWallWidth={backWallWidth} />
                 <CameraCoords setCoords={setCoords} />
@@ -300,35 +348,27 @@ export default function ShelfConfigurator() {
                     onClick={pt => handleCanvasClick(pt)}
                     showGrid={!!(selectedPreview && selectedModel)}
                 />
-                {selectedPreview && selectedModel && <PlacementGrid />}
-
 
                 <ClickPlane
                     onClick={handleCanvasClick}
                     onHover={pos => setHoverPosition(pos)}
                 />
 
-                {selectedPreview && selectedModel && (
-                    <ModelWorkshop
-                        model={selectedPreview.component}
-                        position={selectedPreview.position}
-                        scale={selectedPreview.scale}
-                        onReady={({ attachments }, id) => {
-                            // only update if it’s the same preview instance
-                            setSelectedPreview(prev =>
-                                prev.id === id
-                                    ? { ...prev, attachments }
-                                    : prev
-                            )
-                        }}
-                        id={selectedPreview.id}
-                    />
-                )}
-                {selectedPreview && selectedModel && (
-                    <Line points={[hoverPosition, [0, 0, 0]]} lineWidth={1} color="blue" />
-                )}
+                {/*selectedPreview && selectedModel && <PlacementGrid />}
+                {selectedPreview && selectedModel && <Line points={[[0, 0, 0], findClosestPreviewAttachment(selectedPreview)]} lineWidth={1} color="blue" />*/}
 
-                {placedModels.map((model) =>
+                {/*selectedPreview && selectedModel && (
+                    <Line points={[hoverPosition, [0, 0, 0]]} lineWidth={1} color="blue" />
+                )*/}
+
+                {(() => {
+                    const pts = findClosestPreviewAttachment(selectedPreview, placedModels);
+                    return (Array.isArray(pts) && pts.length === 2)
+                        ? <Line points={pts} color="green" lineWidth={2} />
+                        : null;
+                })()}
+
+                {/*placedModels.map((model) =>
                     model.attachments && model.attachments.map((point, index) => (
                         <Line
                             key={`${model.id}-${index}`}
@@ -337,9 +377,22 @@ export default function ShelfConfigurator() {
                             color="blue"
                         />
                     ))
-                )}
-                {selectedPreview && closestAttachment && (
-                    <Line points={[hoverPosition, closestAttachment]} color="green" lineWidth={2} />
+                )*/}
+
+                {selectedPreview && selectedModel && (
+                    <ModelWorkshop
+                        model={selectedPreview.component}
+                        position={selectedPreview.position}
+                        scale={selectedPreview.scale}
+                        onReady={({ attachments }, id) => {
+                            setSelectedPreview(prev =>
+                                prev.id === id
+                                    ? { ...prev, attachments }
+                                    : prev
+                            )
+                        }}
+                        id={selectedPreview.id}
+                    />
                 )}
                 {placedModels.map((model) => (
                     <ModelWorkshop
