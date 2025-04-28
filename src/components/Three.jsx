@@ -3,9 +3,6 @@ import { Canvas } from '@react-three/fiber'
 import CanvasTools from './CanvasTools'
 import { useFrame, useThree } from '@react-three/fiber'
 import { ModelWorkshop, modelList } from './modelWorkshop'
-import { Line } from '@react-three/drei'
-
-
 
 function Room({ backWallWidth }) {
     return (
@@ -140,35 +137,6 @@ function ComponentPalette({ models, onSelect }) {
 }
 
 
-function findClosestAttachment(selectedPreview, placedModels) {
-    let closestPoint = null
-    let closestDistance = Infinity
-    if (!selectedPreview?.attachments) return [3, 4, 5];
-
-    for (const model of placedModels) {
-        for (const point of model.attachments) {
-            const dx = selectedPreview.attachments[0] - point[0]
-            const dy = selectedPreview.attachments[1] - point[1]
-            const dz = selectedPreview.attachments[2] - point[2]
-            const distance = Math.sqrt(dx * dx + dy * dy + dz * dz)
-
-            if (distance < closestDistance) {
-                closestDistance = distance
-                closestPoint = point
-            }
-        }
-    }
-
-    return closestPoint
-}
-
-
-
-function PlacementGrid() {
-    return (
-        <gridHelper args={[50, 200]} />
-    )
-}
 
 function findPreviewAnchor(hoverPosition) {
     const snap = v => Math.round(v / 0.2) * 0.2
@@ -194,7 +162,6 @@ function findNewHome(selectedPreview, worldAttachments, placedModels) {
     for (const pa of worldAttachments) {
         for (const model of placedModels) {
             for (const pb of model.attachments || []) {
-                console.log("JA TÄMÄN :", model)
                 const dx = pa[0] - pb[0];
                 const dy = pa[1] - pb[1];
                 const dz = pa[2] - pb[2];
@@ -208,12 +175,15 @@ function findNewHome(selectedPreview, worldAttachments, placedModels) {
         }
     }
 
-    best.place = [best.pair[1][0] + selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][0], best.pair[1][1], best.pair[1][2] - selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][2]]
-    console.log(best.place)
-
-    console.log("tuen piste", best.pair[1], " ja uuden piste ", best.pair[0])
+    best.place = [best.pair[1][0] - selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][0],
+    best.pair[1][1],
+    best.pair[1][2] - selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][2]]
+    console.log(best.pair[1][0] > selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][0])
+    console.log("HYLLY", best.pair[0], "TUKI", best.pair[1])
+    console.log(worldAttachments.indexOf(best.pair[0]))
     return best.place;
 }
+
 export default function ShelfConfigurator() {
     const [backWallWidth, setBackWallWidth] = useState(5)
     const [coords, setCoords] = useState([0, 0, 0])
@@ -227,52 +197,6 @@ export default function ShelfConfigurator() {
     useEffect(() => {
         setModels(modelList)
     }, [])
-
-    /*
-
-    useEffect(() => {
-        if (!selectedPreview?.attachments) return;
-
-        setSelectedPreview(prev => ({
-            ...prev,
-            attachments: prev.attachments.map(offset => ([
-                prev.position[0] + offset[0],
-                prev.position[1] + offset[1],
-                prev.position[2] + offset[2],
-            ])),
-        }));
-    }, [hoverPosition]);
-
-    useEffect(() => {
-        if (selectedPreview) {
-            setSelectedPreview(prevState => ({ ...prevState, position: findPreviewAnchor(hoverPosition) }))
-        }
-    }, [hoverPosition])
-*/
-    /*
-    useEffect(() => {
-        setPlacedModels(prev => {
-            const updatedModels = prev.map(juttu => {
-                const updatedAttachments = juttu.attachments.map(piste => ([
-                    juttu.position[0] + piste[0],
-                    piste[1],
-                    juttu.position[2]
-                ]))
-                console.log(juttu)
-                return { ...juttu, attachments: updatedAttachments }
-            })
-            
-            return updatedModels
-        })
-    }, [placedModels.length])
-*/
-
-
-
-    const closestAttachment = React.useMemo(() => {
-        if (!selectedPreview) return null
-        return findClosestAttachment(selectedPreview, placedModels)
-    }, [hoverPosition, placedModels, selectedPreview])
 
 
 
@@ -293,7 +217,6 @@ export default function ShelfConfigurator() {
         const basePosition = selectedModel.isSupport
             ? [point.x, point.y, -0.3]
             : hoverPosition
-        //closestAttachment || findPreviewAnchor(hoverPosition);
 
 
         const pieceDimOffset = selectedPreview.attachments || [];
@@ -303,8 +226,6 @@ export default function ShelfConfigurator() {
             basePosition[1] + off[1],
             basePosition[2] + off[2],
         ]));
-
-
 
         const newModel = {
             ...selectedModel,
@@ -319,20 +240,6 @@ export default function ShelfConfigurator() {
         setSelectedPreview(null);
     }
 
-    /*function updateModelAttachments() {
-        console.log("olenko se minä muahaha")
-        setPlacedModels(prevModels => prevModels.map(model => {
-            const modelRef = refs.current[model.id]
-            if (modelRef && modelRef.getAttachments) {
-
-                return {
-                    ...model,
-                    attachments: modelRef.getAttachments()
-                }
-            }
-            return model
-        }))
-    }*/
 
     return (
         <div className="relative w-[1200px] h-[800px] bg-gray-100">
@@ -362,36 +269,12 @@ export default function ShelfConfigurator() {
                     onHover={pos => setHoverPosition(pos)}
                 />
 
-                {/*selectedPreview && selectedModel && <PlacementGrid />}
-                {selectedPreview && selectedModel && <Line points={[[0, 0, 0], findClosestPreviewAttachment(selectedPreview)]} lineWidth={1} color="blue" />*/}
-
-                {/*selectedPreview && selectedModel && (
-                    <Line points={[hoverPosition, [0, 0, 0]]} lineWidth={1} color="blue" />
-                )*/}
-
-                {(() => {
-                    const pts = findClosestPreviewAttachment(selectedPreview, placedModels);
-                    return (Array.isArray(pts) && pts.length === 2)
-                        ? <Line points={pts} color="green" lineWidth={2} />
-                        : null;
-                })()}
-
-                {/*placedModels.map((model) =>
-                    model.attachments && model.attachments.map((point, index) => (
-                        <Line
-                            key={`${model.id}-${index}`}
-                            points={[[0, 0, 0], point]}
-                            lineWidth={1}
-                            color="blue"
-                        />
-                    ))
-                )*/}
-
                 {selectedPreview && selectedModel && (
                     <ModelWorkshop
                         model={selectedPreview.component}
                         position={hoverPosition}
                         scale={selectedPreview.scale}
+                        id={selectedPreview.id}
                         onReady={({ attachments }, id) => {
                             setSelectedPreview(prev =>
                                 prev.id === id
@@ -399,7 +282,6 @@ export default function ShelfConfigurator() {
                                     : prev
                             )
                         }}
-                        id={selectedPreview.id}
                     />
                 )}
                 {placedModels.map((model) => (
@@ -410,10 +292,7 @@ export default function ShelfConfigurator() {
                         position={model.position}
                         scale={model.scale}
                         ref={el => { if (el) refs.current[model.id] = el }}
-                    //onReady={(data) => {
-                    //  model.attachments = data.attachments
-                    //   //updateModelAttachments()
-                    //}}
+
                     />
                 ))}
 
