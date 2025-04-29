@@ -216,7 +216,7 @@ export default function ShelfConfigurator() {
 
         const basePosition = selectedModel.isSupport
             ? [point.x, point.y, -0.3]
-            : hoverPosition
+            : findNewHome(selectedPreview, selectedPreview.attachments, placedModels)
 
 
         const pieceDimOffset = selectedPreview.attachments || [];
@@ -240,7 +240,22 @@ export default function ShelfConfigurator() {
         setSelectedPreview(null);
     }
 
-
+    function handleModelPick(id) {
+        setPlacedModels(prev => {
+            const picked = prev.find(m => m.id === id)
+            const rest = prev.filter(m => m.id !== id)
+            // Laita sama malli preview-tilaan
+            setSelectedModel(picked)
+            setSelectedPreview({
+                component: picked,
+                position: picked.position,
+                scale: picked.scale,
+                id: picked.id,
+                attachments: picked.attachments,
+            })
+            return rest
+        })
+    }
     return (
         <div className="relative w-[1200px] h-[800px] bg-gray-100">
 
@@ -261,9 +276,8 @@ export default function ShelfConfigurator() {
                     backWallHeight={5}
                     onHover={pos => setHoverPosition(pos)}
                     onClick={pt => handleCanvasClick(pt)}
-                    showGrid={!!(selectedPreview && selectedModel)}
+                    showGrid={!!selectedPreview}
                 />
-
                 <ClickPlane
                     onClick={handleCanvasClick}
                     onHover={pos => setHoverPosition(pos)}
@@ -284,16 +298,26 @@ export default function ShelfConfigurator() {
                         }}
                     />
                 )}
-                {placedModels.map((model) => (
-                    <ModelWorkshop
+                {placedModels.map(model => (
+                    <group
                         key={model.id}
-                        id={model.id}
-                        model={model}
-                        position={model.position}
-                        scale={model.scale}
-                        ref={el => { if (el) refs.current[model.id] = el }}
-
-                    />
+                        onPointerDown={e => {
+                            e.stopPropagation()
+                        }}
+                        onClick={e => {
+                            e.stopPropagation()
+                            handleModelPick(model.id)
+                        }}
+                        cursor="pointer"
+                    >
+                        <ModelWorkshop
+                            id={model.id}
+                            model={model}
+                            position={model.position}
+                            scale={model.scale}
+                            ref={el => { if (el) refs.current[model.id] = el }}
+                        />
+                    </group>
                 ))}
 
             </Canvas>
