@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { Canvas } from '@react-three/fiber'
 import CanvasTools from './CanvasTools'
 import { useFrame, useThree } from '@react-three/fiber'
@@ -136,7 +136,25 @@ function ComponentPalette({ models, onSelect }) {
     )
 }
 
+function AnchorMarker({ position }) {
+    const [shiny, setShiny] = useState(false)
 
+    return (
+        <mesh
+            position={position}
+            onPointerEnter={() => setShiny(true)}
+            onPointerLeave={() => setShiny(false)}
+        >
+            {/* Esim. pieni pallo ankkuripisteen ympärille */}
+            <sphereGeometry args={[0.05, 16, 16]} />
+            <meshPhongMaterial
+                color={shiny ? 0xffff00 : 0xffffff}       // hover: keltainen, muuten valk.
+                emissive={shiny ? 0xffff00 : 0x000000}    // korostettu hehku
+                shininess={100}
+            />
+        </mesh>
+    )
+}
 
 function findPreviewAnchor(hoverPosition) {
     const snap = v => Math.round(v / 0.2) * 0.2
@@ -153,6 +171,8 @@ function findPreviewAnchor(hoverPosition) {
 }
 
 function findNewHome(selectedPreview, worldAttachments, placedModels) {
+    if (!worldAttachments.length || !placedModels) return;
+
     let best = {
         dist: Infinity,
         pair: null,
@@ -162,6 +182,8 @@ function findNewHome(selectedPreview, worldAttachments, placedModels) {
     for (const pa of worldAttachments) {
         for (const model of placedModels) {
             for (const pb of model.attachments || []) {
+                if (!model.isSupport) continue;
+
                 const dx = pa[0] - pb[0];
                 const dy = pa[1] - pb[1];
                 const dz = pa[2] - pb[2];
@@ -178,9 +200,8 @@ function findNewHome(selectedPreview, worldAttachments, placedModels) {
     best.place = [best.pair[1][0] - selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][0],
     best.pair[1][1],
     best.pair[1][2] - selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][2]]
-    console.log(best.pair[1][0] > selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][0])
+    //console.log(best.pair[1][0] > selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][0])
     console.log("HYLLY", best.pair[0], "TUKI", best.pair[1])
-    console.log(worldAttachments.indexOf(best.pair[0]))
     return best.place;
 }
 
@@ -192,6 +213,7 @@ export default function ShelfConfigurator() {
     const [selectedModel, setSelectedModel] = useState(null)
     const [hoverPosition, setHoverPosition] = useState([0, 0.05, 0])
     const [selectedPreview, setSelectedPreview] = useState(null)
+    const [lastHome, setLastHome] = useState([])
     const refs = useRef({})
 
     useEffect(() => {
@@ -199,7 +221,23 @@ export default function ShelfConfigurator() {
     }, [])
 
 
+    useMemo(() => {
 
+        if (!selectedModel || !selectedPreview?.attachments || selectedModel.isSupport || !placedModels) return;
+        const pieceDimOffset = selectedPreview.attachments || [];
+
+        const worldAttachments = pieceDimOffset.map(off => ([
+            hoverPosition[0] + off[0],
+            hoverPosition[1] + off[1],
+            hoverPosition[2] + off[2],
+        ]));
+        setLastHome(findNewHome(selectedPreview, worldAttachments, placedModels))
+
+        if (selectedPreview && selectedPreview.attachments.length && placedModels.length) {
+            return lastHome
+        }
+        return lastHome
+    }, [hoverPosition, selectedPreview, placedModels])
 
     async function handleModelSelect(model) {
         setSelectedModel(model)
@@ -214,9 +252,12 @@ export default function ShelfConfigurator() {
     function handleCanvasClick(point) {
         if (!selectedModel || !selectedPreview?.attachments) return;
 
+/*
         const basePosition = selectedModel.isSupport
             ? [point.x, point.y, -0.3]
             : findNewHome(selectedPreview, selectedPreview.attachments, placedModels)
+*/
+        const basePosition = [point.x, point.y, -0.3]
 
 
         const pieceDimOffset = selectedPreview.attachments || [];
@@ -262,13 +303,14 @@ export default function ShelfConfigurator() {
             <ComponentPalette models={models} onSelect={handleModelSelect} />
             <BackWallWidthControl backWallWidth={backWallWidth} setBackWallWidth={setBackWallWidth} />
             <Canvas
-                camera={{ position: [-2, 2.5, 3.3], fov: 50 }}
+                camera={{ position: [0, 2.22, 3.67], fov: 50 }}
                 className="relative outline top-0 left-60 right-80 max-w-4/6 max-h-4/6">
                 <Room backWallWidth={backWallWidth} />
                 <CameraCoords setCoords={setCoords} />
                 <CanvasTools
                     backWallWidth={backWallWidth}
                     setCoords={setCoords}
+                    cameraTarget={[-0, 1, -0]}
                 />
 
                 <BackWallPlane
@@ -282,6 +324,9 @@ export default function ShelfConfigurator() {
                     onClick={handleCanvasClick}
                     onHover={pos => setHoverPosition(pos)}
                 />
+                {selectedPreview && lastHome && (
+                    <AnchorMarker position={lastHome} />
+                )}
 
                 {selectedPreview && selectedModel && (
                     <ModelWorkshop
