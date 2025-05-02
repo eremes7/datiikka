@@ -168,7 +168,7 @@ function findPreviewAnchor(hoverPosition) {
 }
 
 function findNewHome(selectedPreview, worldAttachments, placedModels) {
-    if (!worldAttachments.length || !placedModels) return;
+    if (!worldAttachments.length || !placedModels.some(m => m.isSupport)) return;
 
     let best = {
         dist: Infinity,
@@ -202,12 +202,7 @@ function findNewHome(selectedPreview, worldAttachments, placedModels) {
     return best.place;
 }
 
-function findSupportSpot(selectedPreview, placedModels) {
-    if (!selectedPreview.isSupport || !placedModels) return;
-    console.log(":)")
-    const goodSpot = [0, 0, 0]
-    return goodSpot
-}
+
 
 
 export function SupportSpotAssist({ placedModels, hoverPosition }) {
@@ -223,7 +218,7 @@ export function SupportSpotAssist({ placedModels, hoverPosition }) {
 
     const dx = hoverPosition[0] - nearest.position[0]
     const sign = Math.sign(dx) || 1
-    const length = sign * (Math.abs(dx) < 0.9 ? 0.75 : 1.0)
+    const length = sign * (Math.abs(dx) < 0.9 ? 0.7 : 1.0)
 
 
     return (
@@ -235,6 +230,25 @@ export function SupportSpotAssist({ placedModels, hoverPosition }) {
         </group>
     )
 }
+
+function findSupportHome( placedModels, point ) {
+    const supports = placedModels.filter(m => m.isSupport)
+    if (!placedModels.some(m => m.isSupport)) return [point.x, 0, -0.3]
+
+    const nearest = supports.reduce((best, curr) => {
+        return Math.abs(point.x - curr.position[0]) <
+            Math.abs(point.x - best.position[0])
+            ? curr
+            : best
+    }, supports[0])
+
+    const dx = point.x - nearest.position[0]
+    const sign = Math.sign(dx) || 1
+    const length = sign * (Math.abs(dx) < 0.9 ? 0.732 : 1.0)
+    return ([nearest.position[0] + length, 0, 0])
+}
+
+
 export default function ShelfConfigurator() {
     const [backWallWidth, setBackWallWidth] = useState(5)
     const [coords, setCoords] = useState([0, 0, 0])
@@ -290,12 +304,12 @@ export default function ShelfConfigurator() {
             basePosition[1] + off[1],
             basePosition[2] + off[2],
         ]));
-        findSupportSpot(selectedModel, placedModels)
+        //position: selectedModel.isSupport ? [point.x, 0, -0.3] : findNewHome(selectedPreview, worldAttachments, placedModels),
 
         const newModel = {
             ...selectedModel,
             id: Date.now() + Math.random(),
-            position: selectedModel.isSupport ? [point.x, 0, -0.3] : findNewHome(selectedPreview, worldAttachments, placedModels),
+            position: selectedModel.isSupport ? findSupportHome(placedModels, point) : findNewHome(selectedPreview, worldAttachments, placedModels),
             scale: [1, 1, 1],
             attachments: worldAttachments,
         };
@@ -381,7 +395,7 @@ export default function ShelfConfigurator() {
                             e.stopPropagation()
                         }}
                         onClick={e => {
-                            if(selectedPreview){return}
+                            if (selectedPreview) { return }
                             e.stopPropagation()
                             handleModelPick(model.id)
                         }}
