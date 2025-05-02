@@ -59,7 +59,7 @@ export const ModelWorkshop = forwardRef(({ model, attachments, position, scale, 
         }
     }
     const Component = model.component || model
-    const adjustedPosition = model.isSupport ? [position[0], 0, position[2]] : position
+    const adjustedPosition = model.isSupport ? [position[0], 0, 0] : position
 
     return (
         <group ref={ref || groupRef}>

@@ -3,6 +3,8 @@ import { Canvas } from '@react-three/fiber'
 import CanvasTools from './CanvasTools'
 import { useFrame, useThree } from '@react-three/fiber'
 import { ModelWorkshop, modelList } from './modelWorkshop'
+import { Mesh } from 'three'
+import { Line } from '@react-three/drei'
 
 function Room({ backWallWidth }) {
     return (
@@ -138,18 +140,16 @@ function ComponentPalette({ models, onSelect }) {
 
 function AnchorMarker({ position }) {
     const [shiny, setShiny] = useState(false)
-
     return (
         <mesh
             position={position}
             onPointerEnter={() => setShiny(true)}
             onPointerLeave={() => setShiny(false)}
         >
-            {/* Esim. pieni pallo ankkuripisteen ympärille */}
             <sphereGeometry args={[0.05, 16, 16]} />
             <meshPhongMaterial
-                color={shiny ? 0xffff00 : 0xffffff}       // hover: keltainen, muuten valk.
-                emissive={shiny ? 0xffff00 : 0x000000}    // korostettu hehku
+                color={shiny ? 0xffff00 : 0xffffff}
+                emissive={shiny ? 0xffff00 : 0x000000}
                 shininess={100}
             />
         </mesh>
@@ -158,16 +158,13 @@ function AnchorMarker({ position }) {
 
 function findPreviewAnchor(hoverPosition) {
     const snap = v => Math.round(v / 0.2) * 0.2
-
     const dx = Math.abs(hoverPosition[0] - snap(hoverPosition[0]))
     const dz = Math.abs(hoverPosition[2] - snap(hoverPosition[2]))
     if (dx < dz) {
         return [snap(hoverPosition[0]), hoverPosition[1], hoverPosition[2]]
     } else {
-
         return [hoverPosition[0], hoverPosition[1], snap(hoverPosition[2])]
     }
-
 }
 
 function findNewHome(selectedPreview, worldAttachments, placedModels) {
@@ -201,10 +198,43 @@ function findNewHome(selectedPreview, worldAttachments, placedModels) {
     best.pair[1][1],
     best.pair[1][2] - selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][2]]
     //console.log(best.pair[1][0] > selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][0])
-    console.log("HYLLY", best.pair[0], "TUKI", best.pair[1])
+    //console.log("HYLLY", best.pair[0], "TUKI", best.pair[1])
     return best.place;
 }
 
+function findSupportSpot(selectedPreview, placedModels) {
+    if (!selectedPreview.isSupport || !placedModels) return;
+    console.log(":)")
+    const goodSpot = [0, 0, 0]
+    return goodSpot
+}
+
+
+export function SupportSpotAssist({ placedModels, hoverPosition }) {
+    const supports = placedModels.filter(m => m.isSupport)
+    if (!supports.length) return null
+
+    const nearest = supports.reduce((best, curr) => {
+        return Math.abs(hoverPosition[0] - curr.position[0]) <
+            Math.abs(hoverPosition[0] - best.position[0])
+            ? curr
+            : best
+    }, supports[0])
+
+    const dx = hoverPosition[0] - nearest.position[0]
+    const sign = Math.sign(dx) || 1
+    const length = sign * (Math.abs(dx) < 0.9 ? 0.75 : 1.0)
+
+
+    return (
+        <group>
+            <Line
+                points={[[nearest.position[0], 0, 0], [nearest.position[0] + length, 0, 0]]}
+                lineWidth={7}
+            />
+        </group>
+    )
+}
 export default function ShelfConfigurator() {
     const [backWallWidth, setBackWallWidth] = useState(5)
     const [coords, setCoords] = useState([0, 0, 0])
@@ -214,6 +244,7 @@ export default function ShelfConfigurator() {
     const [hoverPosition, setHoverPosition] = useState([0, 0.05, 0])
     const [selectedPreview, setSelectedPreview] = useState(null)
     const [lastHome, setLastHome] = useState([])
+    const hasSupport = placedModels.some(m => m.isSupport);
     const refs = useRef({})
 
     useEffect(() => {
@@ -252,26 +283,19 @@ export default function ShelfConfigurator() {
     function handleCanvasClick(point) {
         if (!selectedModel || !selectedPreview?.attachments) return;
 
-/*
-        const basePosition = selectedModel.isSupport
-            ? [point.x, point.y, -0.3]
-            : findNewHome(selectedPreview, selectedPreview.attachments, placedModels)
-*/
-        const basePosition = [point.x, point.y, -0.3]
-
-
+        const basePosition = [point.x, point.y, 0]
         const pieceDimOffset = selectedPreview.attachments || [];
-
         const worldAttachments = pieceDimOffset.map(off => ([
             basePosition[0] + off[0],
             basePosition[1] + off[1],
             basePosition[2] + off[2],
         ]));
+        findSupportSpot(selectedModel, placedModels)
 
         const newModel = {
             ...selectedModel,
             id: Date.now() + Math.random(),
-            position: selectedModel.isSupport ? [point.x, point.y, -0.3] : findNewHome(selectedPreview, worldAttachments, placedModels),
+            position: selectedModel.isSupport ? [point.x, 0, -0.3] : findNewHome(selectedPreview, worldAttachments, placedModels),
             scale: [1, 1, 1],
             attachments: worldAttachments,
         };
@@ -327,6 +351,12 @@ export default function ShelfConfigurator() {
                 {selectedPreview && lastHome && (
                     <AnchorMarker position={lastHome} />
                 )}
+                {selectedPreview && placedModels.some(m => m.isSupport) && (
+                    <SupportSpotAssist
+                        placedModels={placedModels}
+                        hoverPosition={hoverPosition}
+                    />
+                )}
 
                 {selectedPreview && selectedModel && (
                     <ModelWorkshop
@@ -343,6 +373,7 @@ export default function ShelfConfigurator() {
                         }}
                     />
                 )}
+
                 {placedModels.map(model => (
                     <group
                         key={model.id}
@@ -350,6 +381,7 @@ export default function ShelfConfigurator() {
                             e.stopPropagation()
                         }}
                         onClick={e => {
+                            if(selectedPreview){return}
                             e.stopPropagation()
                             handleModelPick(model.id)
                         }}
