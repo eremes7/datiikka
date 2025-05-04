@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap');
 @import "tailwindcss";
 
 @layer components {
@@ -5,3 +6,8 @@
       @apply py-1.5 px-3 text-center bg-blue-700 rounded-md text-white;
   } */
 }
+@layer base {
+    html {
+      font-family: 'IBM Plex Mono', monospace;
+    }
+  }

@@ -1,18 +1,22 @@
-import Navibar from './components/Navibar';
-import ShelfConfigurator from './components/Three';
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Navibar from './components/Navibar'
+import FrontPage from './pages/FrontPage'
+import ShelfConfigurator from './pages/Three'
+import TestScene from './pages/TestScene'
 
 function App() {
-  return (
-    <>
-      <Navibar />
-      <div className="h-20 justify-center">
-        kakkaa lumella
-      </div>
-      <main className="pt-16 p-4 flex justify-center">
-        <ShelfConfigurator />
-      </main>
-    </>
-  );
+    return (
+        <BrowserRouter>
+            <Navibar />
+            <main className="pt-16 p-4">
+                <Routes>
+                    <Route path="/" element={<FrontPage />} />
+                    <Route path="/shelfconfigurator" element={<ShelfConfigurator />} />
+                    <Route path="/testScene" element={<TestScene />} />
+                </Routes>
+            </main>
+        </BrowserRouter>
+    )
 }
 
 export default App;

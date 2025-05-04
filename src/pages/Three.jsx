@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { Canvas } from '@react-three/fiber'
-import CanvasTools from './CanvasTools'
+import CanvasTools from '../components/CanvasTools'
 import { useFrame, useThree } from '@react-three/fiber'
-import { ModelWorkshop, modelList } from './modelWorkshop'
+import { ModelWorkshop, modelList } from '../components/modelWorkshop'
 import { Mesh } from 'three'
 import { Line } from '@react-three/drei'
 
@@ -195,7 +195,7 @@ function findNewHome(selectedPreview, worldAttachments, placedModels) {
     }
 
     best.place = [best.pair[1][0] - selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][0],
-    best.pair[1][1],
+    best.pair[1][1] - selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][1],
     best.pair[1][2] - selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][2]]
     //console.log(best.pair[1][0] > selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][0])
     //console.log("HYLLY", best.pair[0], "TUKI", best.pair[1])
@@ -349,6 +349,8 @@ export default function ShelfConfigurator() {
                     backWallWidth={backWallWidth}
                     setCoords={setCoords}
                     cameraTarget={[-0, 1, -0]}
+                    lightIntensity={0.5}
+                    showAxis={false}
                 />
 
                 <BackWallPlane
