@@ -8,8 +8,10 @@ Export as gltf e.g. /CAD
 run this.
 
 FILE=WRITE FILENAME HERE; \
+
+
 npx gltfjsx "$FILE.gltf" --transform -j \
-    && mv "${FILE}-transformed.glb" public/ \
-    && mkdir -p "src/3D_objektit/$FILE" \
-    && mv "${FILE}.jsx" "src/3D_objektit/$FILE/"
+    && mv "${FILE}-transformed.glb" ../public/ \
+    && mkdir -p "../src/3D_objektit/$FILE" \
+    && mv "${FILE}.jsx" "../src/3D_objektit/$FILE/"
 

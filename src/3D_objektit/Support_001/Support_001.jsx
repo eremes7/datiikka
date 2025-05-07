@@ -11,7 +11,7 @@ export function Model(props) {
   const { nodes, materials } = useGLTF('/Support_001-transformed.glb')
   return (
     <group {...props} dispose={null}>
-      <group position={[0.04, 0.85, 0.01]}>
+      <group position={[0.04, 0.85, 0.01]} >
         <mesh geometry={nodes.attach_bottom_1.geometry} material={materials.mat_0} />
         <mesh geometry={nodes.attach_bottom_2.geometry} material={materials.mat_0} />
         <mesh geometry={nodes.attach_bottom_3.geometry} material={materials.mat_0} />
@@ -35,10 +35,10 @@ export function Model(props) {
         <mesh geometry={nodes.attach_middle_5.geometry} material={materials.mat_0} />
         <mesh geometry={nodes.attach_middle_6.geometry} material={materials.mat_0} />
       </group>
-      <mesh geometry={nodes.Support_1.geometry} material={materials.mat_0} />
-      <mesh geometry={nodes.Support_2.geometry} material={materials.mat_0} />
-      <mesh geometry={nodes.Support_3.geometry} material={materials.mat_0} />
-      <mesh geometry={nodes.Support_4.geometry} material={materials.mat_0} />
+      <mesh geometry={nodes.Support_1.geometry} material={materials.mat_0} receiveShadow castShadow/>
+      <mesh geometry={nodes.Support_2.geometry} material={materials.mat_0} receiveShadow castShadow/>
+      <mesh geometry={nodes.Support_3.geometry} material={materials.mat_0} receiveShadow castShadow/>
+      <mesh geometry={nodes.Support_4.geometry} material={materials.mat_0} receiveShadow castShadow/>
     </group>
   )
 }

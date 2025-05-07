@@ -3,31 +3,9 @@ import { Canvas } from '@react-three/fiber'
 import CanvasTools from '../components/CanvasTools'
 import { useFrame, useThree } from '@react-three/fiber'
 import { ModelWorkshop, modelList } from '../components/modelWorkshop'
-import { Mesh } from 'three'
 import { Line } from '@react-three/drei'
+import { Room } from '../components/Room'
 
-function Room({ backWallWidth }) {
-    return (
-        <group>
-            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-                <planeGeometry args={[2 + backWallWidth, 5]} />
-                <meshStandardMaterial color="#aaaaaa" />
-            </mesh>
-            <mesh rotation={[0, 0, 0]} position={[0, 2.5, -0.5]}>
-                <planeGeometry args={[2 + backWallWidth, 5]} />
-                <meshStandardMaterial color="#cccccc" />
-            </mesh>
-            <mesh rotation={[0, Math.PI / 2, 0]} position={[-1 - backWallWidth / 2, 2.5, 0]}>
-                <planeGeometry args={[5, 5]} />
-                <meshStandardMaterial color="#dddddd" />
-            </mesh>
-            <mesh rotation={[0, -Math.PI / 2, 0]} position={[1 + backWallWidth / 2, 2.5, 0]}>
-                <planeGeometry args={[5, 5]} />
-                <meshStandardMaterial color="#dddddd" />
-            </mesh>
-        </group>
-    )
-}
 function BackWallWidthControl({ backWallWidth, setBackWallWidth }) {
     return (
         <div className="absolute top-150 w-50 left-2 z-10 bg-white/80 p-2 rounded shadow text-sm">
@@ -231,7 +209,7 @@ export function SupportSpotAssist({ placedModels, hoverPosition }) {
     )
 }
 
-function findSupportHome( placedModels, point ) {
+function findSupportHome(placedModels, point) {
     const supports = placedModels.filter(m => m.isSupport)
     if (!placedModels.some(m => m.isSupport)) return [point.x, 0, -0.3]
 
@@ -341,6 +319,8 @@ export default function ShelfConfigurator() {
             <ComponentPalette models={models} onSelect={handleModelSelect} />
             <BackWallWidthControl backWallWidth={backWallWidth} setBackWallWidth={setBackWallWidth} />
             <Canvas
+                shadows
+                gl={{ antialias: true }}
                 camera={{ position: [0, 2.22, 3.67], fov: 50 }}
                 className="relative outline top-0 left-60 right-80 max-w-4/6 max-h-4/6">
                 <Room backWallWidth={backWallWidth} />
