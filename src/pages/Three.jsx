@@ -66,7 +66,7 @@ export function BackWallPlane({
     showGrid = false,    // new prop
 }) {
     return (
-        <group position={[0, backWallHeight / 2, -0.4]}>
+        <group position={[0, backWallHeight / 2, -0.30]}>
             {/* always-there click mesh */}
             <mesh
                 onPointerMove={e => {
@@ -338,7 +338,7 @@ export default function ShelfConfigurator() {
                     backWallHeight={5}
                     onHover={pos => setHoverPosition(pos)}
                     onClick={pt => handleCanvasClick(pt)}
-                    showGrid={!!selectedPreview}
+                    //showGrid={!!selectedPreview}
                 />
                 <ClickPlane
                     onClick={handleCanvasClick}
