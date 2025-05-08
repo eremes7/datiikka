@@ -17,6 +17,18 @@ function Seinä({ textureProps }) {
 }
 
 export function Room({ backWallWidth }) {
+    // concrete 46
+    const [
+        concreteColor,
+        concreteNormal,
+        concreteDisplacement,
+        concreteRoughness
+    ] = useTexture([
+        '/textures/Concrete046/Concrete046_2K-JPG_Color.jpg',
+        '/textures/Concrete046/Concrete046_2K-JPG_NormalGL.jpg',
+        '/textures/Concrete046/Concrete046_2K-JPG_Displacement.jpg',
+        '/textures/Concrete046/Concrete046_2K-JPG_Roughness.jpg',
+    ])
     // wood floor 92
     const [
         woodColor,
@@ -58,34 +70,33 @@ export function Room({ backWallWidth }) {
         // toista tekstuureja
         ;[
             woodColor, woodNormal, woodDisplacement, woodRoughness,
-            plasterColor, plasterNormal, plasterDisplacement, plasterRoughness
+            plasterColor, plasterNormal, plasterDisplacement, plasterRoughness,
+            concreteColor, concreteNormal, concreteDisplacement, concreteRoughness
         ].forEach(tex => {
             tex.wrapS = tex.wrapT = RepeatWrapping
             tex.repeat.set(4, 4)  // tarvittaessa säädä eri arvoiksi lattialle ja seinälle
         })
-
+    /*
+        let textureProps = {
+            plasterColor: plasterColor,
+            plasterNormal: plasterNormal,
+            plasterDisplacement: plasterDisplacement,
+            plasterRoughness: plasterRoughness
+        }
+    */
     let textureProps = {
-        plasterColor: plasterColor,
-        plasterNormal: plasterNormal,
-        plasterDisplacement: plasterDisplacement,
-        plasterRoughness: plasterRoughness
+        concreteColor: concreteColor,
+        concreteNormal: concreteNormal,
+        concreteDisplacement: concreteDisplacement,
+        concreteRoughness: concreteRoughness
     }
-
 
     return (
         <group>
             {/* Lattia (Wood092) */}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 2.5]} receiveShadow>
                 <planeGeometry args={[2 + backWallWidth, 5.5, 64, 64]} />
-                <meshStandardMaterial
-                    map={woodColor}
-                    normalMap={woodNormal}
-                    displacementMap={woodDisplacement}
-                    displacementScale={0.001}
-                    roughnessMap={woodRoughness}
-                    roughness={0.0}
-                    metalness={0.20}
-                />
+                <Seinä textureProps={textureProps} />
             </mesh>
 
             {/* Takaseinä (Plaster001) */}

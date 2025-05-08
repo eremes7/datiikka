@@ -66,7 +66,7 @@ export function BackWallPlane({
     showGrid = false,    // new prop
 }) {
     return (
-        <group position={[0, backWallHeight / 2, -0.30]}>
+        <group position={[0, backWallHeight / 2, 0]}>
             {/* always-there click mesh */}
             <mesh
                 onPointerMove={e => {
@@ -154,6 +154,30 @@ function findNewHome(selectedPreview, worldAttachments, placedModels) {
         place: null
     };
 
+
+    let supportedPoints = []
+    console.log(selectedPreview)
+    for(const support of placedModels){
+        if(support.isSupport){
+            for(const point of support.attachments){
+                
+                
+                const dx = point[0] - worldAttachments[0];
+                const dy = point[1] - worldAttachments[1];
+                const dz = point[2] - worldAttachments[2];
+                const d = Math.hypot(dx, dy, dz);
+
+                if (d < best.dist) {
+                    best.dist = d;
+                    best.place = point;
+                }
+
+
+
+            }
+        }
+    }
+/*
     for (const pa of worldAttachments) {
         for (const model of placedModels) {
             for (const pb of model.attachments || []) {
@@ -170,13 +194,14 @@ function findNewHome(selectedPreview, worldAttachments, placedModels) {
                 }
             }
         }
-    }
+    }*/
 
-    best.place = [best.pair[1][0] - selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][0],
-    best.pair[1][1] - selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][1],
-    best.pair[1][2] - selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][2]]
-    //console.log(best.pair[1][0] > selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][0])
-    //console.log("HYLLY", best.pair[0], "TUKI", best.pair[1])
+   // best.place = [
+     //   best.pair[1][0] - selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][0],
+       // best.pair[1][1],
+      // 0
+   // ]
+// best.pair[1][2] - selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][2]
     return best.place;
 }
 
@@ -242,26 +267,39 @@ export default function ShelfConfigurator() {
     useEffect(() => {
         setModels(modelList)
     }, [])
+    useMemo(() => {
 
+        if (!selectedModel || !selectedPreview?.attachments || selectedModel.isSupport || !placedModels) return;
+        const pieceDimOffset = selectedPreview.attachments || [];
 
+        setLastHome(findNewHome(selectedPreview, hoverPosition, placedModels))
+
+        if (selectedPreview && selectedPreview.attachments.length && placedModels.length) {
+            console.log(lastHome)
+            return lastHome
+        }
+        return lastHome
+    }, [hoverPosition, selectedPreview, placedModels])
+/*
     useMemo(() => {
 
         if (!selectedModel || !selectedPreview?.attachments || selectedModel.isSupport || !placedModels) return;
         const pieceDimOffset = selectedPreview.attachments || [];
 
         const worldAttachments = pieceDimOffset.map(off => ([
-            hoverPosition[0] + off[0],
-            hoverPosition[1] + off[1],
-            hoverPosition[2] + off[2],
+            hoverPosition[0],
+            hoverPosition[1],
+            hoverPosition[2],
         ]));
         setLastHome(findNewHome(selectedPreview, worldAttachments, placedModels))
 
         if (selectedPreview && selectedPreview.attachments.length && placedModels.length) {
+            console.log(lastHome)
             return lastHome
         }
         return lastHome
     }, [hoverPosition, selectedPreview, placedModels])
-
+*/
     async function handleModelSelect(model) {
         setSelectedModel(model)
         setSelectedPreview({
@@ -338,7 +376,7 @@ export default function ShelfConfigurator() {
                     backWallHeight={5}
                     onHover={pos => setHoverPosition(pos)}
                     onClick={pt => handleCanvasClick(pt)}
-                    //showGrid={!!selectedPreview}
+                //showGrid={!!selectedPreview}
                 />
                 <ClickPlane
                     onClick={handleCanvasClick}
