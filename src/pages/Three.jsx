@@ -5,6 +5,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { ModelWorkshop, modelList } from '../components/modelWorkshop'
 import { Line } from '@react-three/drei'
 import { Room } from '../components/Room'
+import * as THREE from 'three';
 
 function BackWallWidthControl({ backWallWidth, setBackWallWidth }) {
     return (
@@ -63,11 +64,10 @@ export function BackWallPlane({
     backWallHeight,
     onHover,
     onClick,
-    showGrid = false,    // new prop
+    showGrid = true,    // new prop
 }) {
     return (
-        <group position={[0, backWallHeight / 2, 0]}>
-            {/* always-there click mesh */}
+        <group position={[0, backWallHeight / 2, -0.20]}>
             <mesh
                 onPointerMove={e => {
                     e.stopPropagation()
@@ -115,7 +115,6 @@ function ComponentPalette({ models, onSelect }) {
         </div>
     )
 }
-
 function AnchorMarker({ position }) {
     const [shiny, setShiny] = useState(false)
     return (
@@ -133,7 +132,6 @@ function AnchorMarker({ position }) {
         </mesh>
     )
 }
-
 function findPreviewAnchor(hoverPosition) {
     const snap = v => Math.round(v / 0.2) * 0.2
     const dx = Math.abs(hoverPosition[0] - snap(hoverPosition[0]))
@@ -144,7 +142,6 @@ function findPreviewAnchor(hoverPosition) {
         return [hoverPosition[0], hoverPosition[1], snap(hoverPosition[2])]
     }
 }
-
 function findNewHome(selectedPreview, worldAttachments, placedModels) {
     if (!worldAttachments.length || !placedModels.some(m => m.isSupport)) return;
 
@@ -154,60 +151,26 @@ function findNewHome(selectedPreview, worldAttachments, placedModels) {
         place: null
     };
 
-
-    let supportedPoints = []
-    console.log(selectedPreview)
-    for(const support of placedModels){
-        if(support.isSupport){
-            for(const point of support.attachments){
-                
-                
+    for (const support of placedModels) {
+        if (support.isSupport) {
+            for (const point of support.attachments) {
                 const dx = point[0] - worldAttachments[0];
                 const dy = point[1] - worldAttachments[1];
                 const dz = point[2] - worldAttachments[2];
                 const d = Math.hypot(dx, dy, dz);
-
+                console.log(worldAttachments)
                 if (d < best.dist) {
                     best.dist = d;
                     best.place = point;
+
                 }
-
-
-
             }
         }
     }
-/*
-    for (const pa of worldAttachments) {
-        for (const model of placedModels) {
-            for (const pb of model.attachments || []) {
-                if (!model.isSupport) continue;
 
-                const dx = pa[0] - pb[0];
-                const dy = pa[1] - pb[1];
-                const dz = pa[2] - pb[2];
-                const d = Math.hypot(dx, dy, dz);
 
-                if (d < best.dist) {
-                    best.dist = d;
-                    best.pair = [pa, pb];
-                }
-            }
-        }
-    }*/
-
-   // best.place = [
-     //   best.pair[1][0] - selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][0],
-       // best.pair[1][1],
-      // 0
-   // ]
-// best.pair[1][2] - selectedPreview.attachments[worldAttachments.indexOf(best.pair[0])][2]
     return best.place;
 }
-
-
-
-
 export function SupportSpotAssist({ placedModels, hoverPosition }) {
     const supports = placedModels.filter(m => m.isSupport)
     if (!supports.length) return null
@@ -230,10 +193,20 @@ export function SupportSpotAssist({ placedModels, hoverPosition }) {
                 points={[[nearest.position[0], 0, 0], [nearest.position[0] + length, 0, 0]]}
                 lineWidth={7}
             />
+            {supports.map(support => (
+                <Line
+                    key={support.id}
+                    points={[
+                        [support.position[0], 0, 0],  // alku Z=0
+                        [support.position[0], 0, 5]   // loppu Z=5
+                    ]}
+                    lineWidth={1}          // ohut viiva
+                    color="red"            // punainen
+                />
+            ))}
         </group>
     )
 }
-
 function findSupportHome(placedModels, point) {
     const supports = placedModels.filter(m => m.isSupport)
     if (!placedModels.some(m => m.isSupport)) return [point.x, 0, -0.3]
@@ -250,8 +223,14 @@ function findSupportHome(placedModels, point) {
     const length = sign * (Math.abs(dx) < 0.9 ? 0.732 : 1.0)
     return ([nearest.position[0] + length, 0, 0])
 }
+function isShelfSupported(lastHome, refs) {
+    const raycaster = new THREE.Raycaster();
+    const objects = Object.values(refs.current).filter(group => group instanceof THREE.Object3D);
+    raycaster.set(new THREE.Vector3(lastHome[0] + 0.2, lastHome[1], lastHome[2]), new THREE.Vector3(1, 0, 0));
+    const intersects = raycaster.intersectObjects(objects, true)
+    return intersects.some(i => i.object.parent.parent.parent.userData.isSupport);
 
-
+}
 export default function ShelfConfigurator() {
     const [backWallWidth, setBackWallWidth] = useState(5)
     const [coords, setCoords] = useState([0, 0, 0])
@@ -261,50 +240,27 @@ export default function ShelfConfigurator() {
     const [hoverPosition, setHoverPosition] = useState([0, 0.05, 0])
     const [selectedPreview, setSelectedPreview] = useState(null)
     const [lastHome, setLastHome] = useState([])
-    const hasSupport = placedModels.some(m => m.isSupport);
     const refs = useRef({})
 
     useEffect(() => {
         setModels(modelList)
     }, [])
+
     useMemo(() => {
 
         if (!selectedModel || !selectedPreview?.attachments || selectedModel.isSupport || !placedModels) return;
-        const pieceDimOffset = selectedPreview.attachments || [];
-
         setLastHome(findNewHome(selectedPreview, hoverPosition, placedModels))
-
         if (selectedPreview && selectedPreview.attachments.length && placedModels.length) {
-            console.log(lastHome)
             return lastHome
         }
         return lastHome
     }, [hoverPosition, selectedPreview, placedModels])
-/*
-    useMemo(() => {
 
-        if (!selectedModel || !selectedPreview?.attachments || selectedModel.isSupport || !placedModels) return;
-        const pieceDimOffset = selectedPreview.attachments || [];
-
-        const worldAttachments = pieceDimOffset.map(off => ([
-            hoverPosition[0],
-            hoverPosition[1],
-            hoverPosition[2],
-        ]));
-        setLastHome(findNewHome(selectedPreview, worldAttachments, placedModels))
-
-        if (selectedPreview && selectedPreview.attachments.length && placedModels.length) {
-            console.log(lastHome)
-            return lastHome
-        }
-        return lastHome
-    }, [hoverPosition, selectedPreview, placedModels])
-*/
     async function handleModelSelect(model) {
         setSelectedModel(model)
         setSelectedPreview({
             component: model,
-            position: findPreviewAnchor(hoverPosition),
+            position: hoverPosition,
             scale: [1, 1, 1],
             id: Date.now() + Math.random(),
             attachments: [],
@@ -320,12 +276,16 @@ export default function ShelfConfigurator() {
             basePosition[1] + off[1],
             basePosition[2] + off[2],
         ]));
-        //position: selectedModel.isSupport ? [point.x, 0, -0.3] : findNewHome(selectedPreview, worldAttachments, placedModels),
-
+        // TARKASTETAAN MOLEMMINPUOLINEN TUKI
+        if (!selectedModel.isSupport &&
+            !isShelfSupported(lastHome, refs)) {
+            console.warn('Hyllyllä ei ole tukea molemmin puolin');
+            return;
+        }
         const newModel = {
             ...selectedModel,
             id: Date.now() + Math.random(),
-            position: selectedModel.isSupport ? findSupportHome(placedModels, point) : findNewHome(selectedPreview, worldAttachments, placedModels),
+            position: selectedModel.isSupport ? findSupportHome(placedModels, point) : findNewHome(selectedPreview, hoverPosition, placedModels),
             scale: [1, 1, 1],
             attachments: worldAttachments,
         };
@@ -426,7 +386,11 @@ export default function ShelfConfigurator() {
                             model={model}
                             position={model.position}
                             scale={model.scale}
-                            ref={el => { if (el) refs.current[model.id] = el }}
+                            ref={el => {
+                                if (!el) return;
+                                refs.current[model.id] = el;
+                                el.userData.isSupport = model.isSupport;
+                            }}
                         />
                     </group>
                 ))}
