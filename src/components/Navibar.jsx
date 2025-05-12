@@ -13,7 +13,6 @@ export default function Navibar() {
                 setShow(false); // scrollataan alas
             } else {
                 setShow(true); // scrollataan ylös tai ollaan ylhäällä
-                console.log(show)
             }
 
             setLastScrollY(currentScrollY);

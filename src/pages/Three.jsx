@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { Canvas } from '@react-three/fiber'
 import CanvasTools from '../components/CanvasTools'
+import { MaterialTool } from '../components/MaterialTool'
 import { useFrame, useThree } from '@react-three/fiber'
-import { ModelWorkshop, modelList } from '../components/modelWorkshop'
+import { ModelWorkshop } from '../components/modelWorkshop'
 import { Line } from '@react-three/drei'
 import { Room } from '../components/Room'
 import * as THREE from 'three';
+import ComponentPalette from '../components/ComponentPalette'
+import { modelList } from '../components/modelMap'
 
 function BackWallWidthControl({ backWallWidth, setBackWallWidth }) {
     return (
@@ -67,7 +70,7 @@ export function BackWallPlane({
     showGrid = true,    // new prop
 }) {
     return (
-        <group position={[0, backWallHeight / 2, -0.20]}>
+        <group position={[0, backWallHeight / 2, 0]}>
             <mesh
                 onPointerMove={e => {
                     e.stopPropagation()
@@ -80,7 +83,7 @@ export function BackWallPlane({
                     onClick({ x, y, z })
                 }}
             >
-                <planeGeometry args={[backWallWidth, backWallHeight]} />
+                <planeGeometry transparent opacity={0} args={[backWallWidth, backWallHeight]} />
                 <meshBasicMaterial transparent opacity={0} />
             </mesh>
 
@@ -92,29 +95,13 @@ export function BackWallPlane({
                         0x444444
                     ]}
                     rotation={[Math.PI / 2, 0, 0]}
-                    position={[0, 0, 0.0452]}
+                    position={[0, 0, -0.2452]}
                 />
             )}
         </group>
     )
 }
-function ComponentPalette({ models, onSelect }) {
-    if (!models) return null
-    return (
-        <div className="absolute left-2 w-50 top-2 z-10 bg-white/80 p-2 rounded shadow text-sm">
-            <div className="font-semibold">Palette: (Click to select)</div>
-            {models.map((model, i) => (
-                <div
-                    key={i}
-                    className="border border-black p-2 mt-2 cursor-pointer"
-                    onClick={() => onSelect(model)}
-                >
-                    {model.name}
-                </div>
-            ))}
-        </div>
-    )
-}
+
 function AnchorMarker({ position }) {
     const [shiny, setShiny] = useState(false)
     return (
@@ -132,16 +119,7 @@ function AnchorMarker({ position }) {
         </mesh>
     )
 }
-function findPreviewAnchor(hoverPosition) {
-    const snap = v => Math.round(v / 0.2) * 0.2
-    const dx = Math.abs(hoverPosition[0] - snap(hoverPosition[0]))
-    const dz = Math.abs(hoverPosition[2] - snap(hoverPosition[2]))
-    if (dx < dz) {
-        return [snap(hoverPosition[0]), hoverPosition[1], hoverPosition[2]]
-    } else {
-        return [hoverPosition[0], hoverPosition[1], snap(hoverPosition[2])]
-    }
-}
+
 function findNewHome(selectedPreview, worldAttachments, placedModels) {
     if (!worldAttachments.length || !placedModels.some(m => m.isSupport)) return;
 
@@ -158,7 +136,6 @@ function findNewHome(selectedPreview, worldAttachments, placedModels) {
                 const dy = point[1] - worldAttachments[1];
                 const dz = point[2] - worldAttachments[2];
                 const d = Math.hypot(dx, dy, dz);
-                console.log(worldAttachments)
                 if (d < best.dist) {
                     best.dist = d;
                     best.place = point;
@@ -186,7 +163,6 @@ export function SupportSpotAssist({ placedModels, hoverPosition }) {
     const sign = Math.sign(dx) || 1
     const length = sign * (Math.abs(dx) < 0.9 ? 0.7 : 1.0)
 
-
     return (
         <group>
             <Line
@@ -194,6 +170,7 @@ export function SupportSpotAssist({ placedModels, hoverPosition }) {
                 lineWidth={7}
             />
             {supports.map(support => (
+
                 <Line
                     key={support.id}
                     points={[
@@ -206,6 +183,14 @@ export function SupportSpotAssist({ placedModels, hoverPosition }) {
             ))}
         </group>
     )
+}
+function findProperHomeForAttachments(placedModels, point, selectedPreview) {
+    const attachmentSet = selectedPreview.attachments
+    attachmentSet.forEach(i => i[0] = findSupportHome(placedModels, point)[0] - 0.01)
+
+    return attachmentSet
+
+
 }
 function findSupportHome(placedModels, point) {
     const supports = placedModels.filter(m => m.isSupport)
@@ -220,14 +205,15 @@ function findSupportHome(placedModels, point) {
 
     const dx = point.x - nearest.position[0]
     const sign = Math.sign(dx) || 1
-    const length = sign * (Math.abs(dx) < 0.9 ? 0.732 : 1.0)
+    const length = sign * (Math.abs(dx) < 0.9 ? 0.75 : 1.0)
     return ([nearest.position[0] + length, 0, 0])
 }
 function isShelfSupported(lastHome, refs) {
     const raycaster = new THREE.Raycaster();
     const objects = Object.values(refs.current).filter(group => group instanceof THREE.Object3D);
-    raycaster.set(new THREE.Vector3(lastHome[0] + 0.2, lastHome[1], lastHome[2]), new THREE.Vector3(1, 0, 0));
+    raycaster.set(new THREE.Vector3(lastHome[0] + 0.2, lastHome[1], lastHome[2]), new THREE.Vector3(1, 0, -0.05));
     const intersects = raycaster.intersectObjects(objects, true)
+    //console.log("OSUMAT",intersects)
     return intersects.some(i => i.object.parent.parent.parent.userData.isSupport);
 
 }
@@ -241,6 +227,8 @@ export default function ShelfConfigurator() {
     const [selectedPreview, setSelectedPreview] = useState(null)
     const [lastHome, setLastHome] = useState([])
     const refs = useRef({})
+    const [swapMaterials, setSwapMaterials] = useState(false)
+    const [selectedMaterial, setSelectedMaterial] = useState('wood')
 
     useEffect(() => {
         setModels(modelList)
@@ -256,10 +244,13 @@ export default function ShelfConfigurator() {
         return lastHome
     }, [hoverPosition, selectedPreview, placedModels])
 
-    async function handleModelSelect(model) {
+    async function handleModelSelect(model, materialKey) {
+        console.log(model, materialKey)
         setSelectedModel(model)
+        setSelectedMaterial(materialKey)
         setSelectedPreview({
             component: model,
+            materialKey: materialKey,
             position: hoverPosition,
             scale: [1, 1, 1],
             id: Date.now() + Math.random(),
@@ -268,6 +259,9 @@ export default function ShelfConfigurator() {
     }
     function handleCanvasClick(point) {
         if (!selectedModel || !selectedPreview?.attachments) return;
+
+        // HUOMAA, ETTÄ TÄMÄ LASKEE VAIN SUPPORTILLE OIKEIN, OLETAMME, ETTÄ EN TARVITSE HYLLY ATTACHMENTTEJÄ JATKOSSA!
+
 
         const basePosition = [point.x, point.y, 0]
         const pieceDimOffset = selectedPreview.attachments || [];
@@ -285,9 +279,10 @@ export default function ShelfConfigurator() {
         const newModel = {
             ...selectedModel,
             id: Date.now() + Math.random(),
+            materialKey: selectedPreview.materialKey,
             position: selectedModel.isSupport ? findSupportHome(placedModels, point) : findNewHome(selectedPreview, hoverPosition, placedModels),
             scale: [1, 1, 1],
-            attachments: worldAttachments,
+            attachments: selectedModel.isSupport ? findProperHomeForAttachments(placedModels, point, selectedPreview) : worldAttachments,
         };
 
         setPlacedModels(prev => [...prev, newModel]);
@@ -327,7 +322,7 @@ export default function ShelfConfigurator() {
                     backWallWidth={backWallWidth}
                     setCoords={setCoords}
                     cameraTarget={[-0, 1, -0]}
-                    lightIntensity={0.5}
+                    lightIntensity={1}
                     showAxis={false}
                 />
 
@@ -384,6 +379,7 @@ export default function ShelfConfigurator() {
                         <ModelWorkshop
                             id={model.id}
                             model={model}
+                            materialKey={model.materialKey}
                             position={model.position}
                             scale={model.scale}
                             ref={el => {
@@ -394,9 +390,15 @@ export default function ShelfConfigurator() {
                         />
                     </group>
                 ))}
+                <MaterialTool swapMaterials={swapMaterials} placedModels={placedModels} refs={refs} />
 
             </Canvas>
-
+            <button
+                className="absolute top-2 right-2 z-20 bg-blue-500 text-white px-4 py-2 rounded"
+                onClick={() => setSwapMaterials(v => !v)}
+            >
+                Vaihda materiaalit
+            </button>
             <div className="absolute bottom-2 left-2 p-2 bg-white/80 text-xs rounded shadow">
                 {`Camera: x: ${coords[0]}, y: ${coords[1]}, z: ${coords[2]}`}
             </div>
