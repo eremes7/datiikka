@@ -245,7 +245,7 @@ export default function ShelfConfigurator() {
     }, [hoverPosition, selectedPreview, placedModels])
 
     async function handleModelSelect(model, materialKey) {
-        console.log(model, materialKey)
+        console.log("From Three!", model, materialKey)
         setSelectedModel(model)
         setSelectedMaterial(materialKey)
         setSelectedPreview({
@@ -261,7 +261,7 @@ export default function ShelfConfigurator() {
         if (!selectedModel || !selectedPreview?.attachments) return;
 
         // HUOMAA, ETTÄ TÄMÄ LASKEE VAIN SUPPORTILLE OIKEIN, OLETAMME, ETTÄ EN TARVITSE HYLLY ATTACHMENTTEJÄ JATKOSSA!
-
+	console.log(placedModels)
 
         const basePosition = [point.x, point.y, 0]
         const pieceDimOffset = selectedPreview.attachments || [];
@@ -277,14 +277,14 @@ export default function ShelfConfigurator() {
             return;
         }
         const newModel = {
-            ...selectedModel,
             id: Date.now() + Math.random(),
+	    isSupport: selectedPreview.isSupport,
+	    component: selectedModel,
             materialKey: selectedPreview.materialKey,
             position: selectedModel.isSupport ? findSupportHome(placedModels, point) : findNewHome(selectedPreview, hoverPosition, placedModels),
             scale: [1, 1, 1],
             attachments: selectedModel.isSupport ? findProperHomeForAttachments(placedModels, point, selectedPreview) : worldAttachments,
         };
-
         setPlacedModels(prev => [...prev, newModel]);
         setSelectedModel(null);
         setSelectedPreview(null);
@@ -350,6 +350,7 @@ export default function ShelfConfigurator() {
                 {selectedPreview && selectedModel && (
                     <ModelWorkshop
                         model={selectedPreview.component}
+			materialKey={selectedPreview.materialKey}
                         position={hoverPosition}
                         scale={selectedPreview.scale}
                         id={selectedPreview.id}
