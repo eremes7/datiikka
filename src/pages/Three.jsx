@@ -234,15 +234,19 @@ export default function ShelfConfigurator() {
         setModels(modelList)
     }, [])
 
-    useMemo(() => {
+    useEffect(() => {
+	if (
+	    !selectedModel ||
+	    !selectedPreview?.attachments?.length ||
+	    selectedModel.isSupport ||
+	    !placedModels.length
+	) return;
 
-        if (!selectedModel || !selectedPreview?.attachments || selectedModel.isSupport || !placedModels) return;
-        setLastHome(findNewHome(selectedPreview, hoverPosition, placedModels))
-        if (selectedPreview && selectedPreview.attachments.length && placedModels.length) {
-            return lastHome
-        }
-        return lastHome
-    }, [hoverPosition, selectedPreview, placedModels])
+	const newHome = findNewHome(selectedPreview, hoverPosition, placedModels)
+	setLastHome(newHome)
+    }, [hoverPosition, selectedModel, selectedPreview, placedModels])
+
+
 
     async function handleModelSelect(model, materialKey) {
         console.log("From Three!", model, materialKey)
@@ -259,7 +263,7 @@ export default function ShelfConfigurator() {
     }
     function handleCanvasClick(point) {
         if (!selectedModel || !selectedPreview?.attachments) return;
-
+	console.log(lastHome)
         // HUOMAA, ETTÄ TÄMÄ LASKEE VAIN SUPPORTILLE OIKEIN, OLETAMME, ETTÄ EN TARVITSE HYLLY ATTACHMENTTEJÄ JATKOSSA!
 	console.log(placedModels)
 
@@ -271,17 +275,21 @@ export default function ShelfConfigurator() {
             basePosition[2] + off[2],
         ]));
         // TARKASTETAAN MOLEMMINPUOLINEN TUKI
-        if (!selectedModel.isSupport &&
+	//
+	
+	console.log("ASLKDJLKSADJ", selectedPreview)
+        if (!selectedPreview.component.isSupport &&
             !isShelfSupported(lastHome, refs)) {
             console.warn('Hyllyllä ei ole tukea molemmin puolin');
             return;
         }
+
         const newModel = {
+	    ...selectedModel,
             id: Date.now() + Math.random(),
-	    isSupport: selectedPreview.isSupport,
-	    component: selectedModel,
             materialKey: selectedPreview.materialKey,
             position: selectedModel.isSupport ? findSupportHome(placedModels, point) : findNewHome(selectedPreview, hoverPosition, placedModels),
+
             scale: [1, 1, 1],
             attachments: selectedModel.isSupport ? findProperHomeForAttachments(placedModels, point, selectedPreview) : worldAttachments,
         };

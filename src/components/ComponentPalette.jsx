@@ -4,9 +4,9 @@ export function ComponentPalette({ models, onSelect }) {
     if (!models) return null
 
     const materials = [
-        { key: "wood", img: materialBank.wood },
-        { key: "black", img: materialBank.black },
-        { key: "white", img: materialBank.white },
+        { key: "wood", img: materialBank.wood.map },
+        { key: "black", img: materialBank.black.map },
+        { key: "white", img: materialBank.white.map },
     ]
 
     return (
