@@ -1,5 +1,4 @@
-import { useEffect, useRef, forwardRef, useLayoutEffect } from 'react'
-import { modelMap, modelList } from './modelMap'
+import { useEffect, useRef, forwardRef, useLayoutEffect, useImperativeHandle } from 'react'
 import { useMaterialTextures } from './useMaterialTextures'
 import { MeshStandardMaterial } from 'three'
 
@@ -9,27 +8,24 @@ export const ModelWorkshop = forwardRef(({ model, materialKey, attachments, posi
     const mats = useMaterialTextures(materialKey)
 
 
-    const ready = mats && mats.map
-    
+
     useLayoutEffect(() => {
-	const obj = (ref && ref.current) || groupRef.current
-	if (!obj || !mats) return
+        const obj = (ref && ref.current) || groupRef.current
+        if (!obj || !mats) return
 
-	obj.traverse((child) => {
-	    if (child.isMesh) {
-		const newMat = new MeshStandardMaterial({
-		    ...mats
-		})
-		child.material = newMat
-		child.material.needsUpdate = true
-		console.log(newMat)
-	    }
-	})
-    }, [ready])
-
+        obj.traverse((child) => {
+            if (child.isMesh) {
+                const newMat = new MeshStandardMaterial({ ...mats })
+                child.material = newMat
+                child.material.needsUpdate = true
+            }
+        })
+    }, [model, mats])
+    useImperativeHandle(ref, () => groupRef.current, [groupRef.current])
     useEffect(() => {
         const obj = (ref && ref.current) || groupRef.current
         if (!obj) return
+
 
         attachmentPoints.current = []
         for (const obj of model.component().props.children || []) {
@@ -45,13 +41,15 @@ export const ModelWorkshop = forwardRef(({ model, materialKey, attachments, posi
 
     const Component = model.component
     const adjustedPosition = model.isSupport ? [position[0], 0, 0] : position
-       const displayAttachments = attachmentPoints.current.map(
+    const displayAttachments = attachmentPoints.current.map(
         ([, y, z]) => [adjustedPosition[0], y, z]
     );
+    //console.log("MALLI => ",model)
+    //console.log("KOMPONENTTI => ",model.component)
 
     return (
-        <group ref={ref || groupRef}>
-            <Component position={adjustedPosition} attachments={displayAttachments} scale={scale} {...props} />
+        <group ref={groupRef} position={position} scale={scale} {...props}>
+            <Component ref={groupRef} position={adjustedPosition} attachments={displayAttachments} scale={scale} {...props} />
         </group>
     )
 })

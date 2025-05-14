@@ -209,11 +209,12 @@ function findSupportHome(placedModels, point) {
     return ([nearest.position[0] + length, 0, 0])
 }
 function isShelfSupported(lastHome, refs) {
+    console.log(refs)
     const raycaster = new THREE.Raycaster();
     const objects = Object.values(refs.current).filter(group => group instanceof THREE.Object3D);
     raycaster.set(new THREE.Vector3(lastHome[0] + 0.2, lastHome[1], lastHome[2]), new THREE.Vector3(1, 0, -0.05));
     const intersects = raycaster.intersectObjects(objects, true)
-    //console.log("OSUMAT",intersects)
+    console.log("OSUMAT", intersects)
     return intersects.some(i => i.object.parent.parent.parent.userData.isSupport);
 
 }
@@ -235,15 +236,15 @@ export default function ShelfConfigurator() {
     }, [])
 
     useEffect(() => {
-	if (
-	    !selectedModel ||
-	    !selectedPreview?.attachments?.length ||
-	    selectedModel.isSupport ||
-	    !placedModels.length
-	) return;
+        if (
+            !selectedModel ||
+            !selectedPreview?.attachments?.length ||
+            selectedModel.isSupport ||
+            !placedModels.length
+        ) return;
 
-	const newHome = findNewHome(selectedPreview, hoverPosition, placedModels)
-	setLastHome(newHome)
+        const newHome = findNewHome(selectedPreview, hoverPosition, placedModels)
+        setLastHome(newHome)
     }, [hoverPosition, selectedModel, selectedPreview, placedModels])
 
 
@@ -263,9 +264,9 @@ export default function ShelfConfigurator() {
     }
     function handleCanvasClick(point) {
         if (!selectedModel || !selectedPreview?.attachments) return;
-	console.log(lastHome)
+        console.log(lastHome)
         // HUOMAA, ETTÄ TÄMÄ LASKEE VAIN SUPPORTILLE OIKEIN, OLETAMME, ETTÄ EN TARVITSE HYLLY ATTACHMENTTEJÄ JATKOSSA!
-	console.log(placedModels)
+        console.log(placedModels)
 
         const basePosition = [point.x, point.y, 0]
         const pieceDimOffset = selectedPreview.attachments || [];
@@ -275,9 +276,9 @@ export default function ShelfConfigurator() {
             basePosition[2] + off[2],
         ]));
         // TARKASTETAAN MOLEMMINPUOLINEN TUKI
-	//
-	
-	console.log("ASLKDJLKSADJ", selectedPreview)
+        //
+
+        console.log(placedModels)
         if (!selectedPreview.component.isSupport &&
             !isShelfSupported(lastHome, refs)) {
             console.warn('Hyllyllä ei ole tukea molemmin puolin');
@@ -285,7 +286,7 @@ export default function ShelfConfigurator() {
         }
 
         const newModel = {
-	    ...selectedModel,
+            ...selectedModel,
             id: Date.now() + Math.random(),
             materialKey: selectedPreview.materialKey,
             position: selectedModel.isSupport ? findSupportHome(placedModels, point) : findNewHome(selectedPreview, hoverPosition, placedModels),
@@ -358,7 +359,7 @@ export default function ShelfConfigurator() {
                 {selectedPreview && selectedModel && (
                     <ModelWorkshop
                         model={selectedPreview.component}
-			materialKey={selectedPreview.materialKey}
+                        materialKey={selectedPreview.materialKey}
                         position={hoverPosition}
                         scale={selectedPreview.scale}
                         id={selectedPreview.id}
@@ -386,16 +387,17 @@ export default function ShelfConfigurator() {
                         cursor="pointer"
                     >
                         <ModelWorkshop
-                            id={model.id}
+                            ref={el => {
+                                if (!el) return
+                                refs.current[model.id] = el
+                                el.userData.isSupport = model.isSupport
+                            }}
                             model={model}
                             materialKey={model.materialKey}
                             position={model.position}
                             scale={model.scale}
-                            ref={el => {
-                                if (!el) return;
-                                refs.current[model.id] = el;
-                                el.userData.isSupport = model.isSupport;
-                            }}
+                            id={model.id}
+
                         />
                     </group>
                 ))}
