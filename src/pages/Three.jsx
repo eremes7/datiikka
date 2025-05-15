@@ -10,6 +10,7 @@ import * as THREE from 'three';
 import ComponentPalette from '../components/ComponentPalette'
 import { modelList } from '../components/modelMap'
 
+
 function BackWallWidthControl({ backWallWidth, setBackWallWidth }) {
     return (
         <div className="absolute top-150 w-50 left-2 z-10 bg-white/80 p-2 rounded shadow text-sm">
@@ -27,6 +28,7 @@ function BackWallWidthControl({ backWallWidth, setBackWallWidth }) {
         </div>
     )
 }
+
 function CameraCoords({ setCoords }) {
     const { camera } = useThree()
     useFrame(() => {
