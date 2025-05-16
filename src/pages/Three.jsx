@@ -11,6 +11,8 @@ import ComponentPalette from '../components/ComponentPalette'
 import { modelList } from '../components/modelMap'
 
 
+
+
 function BackWallWidthControl({ backWallWidth, setBackWallWidth }) {
     return (
         <div className="absolute top-150 w-50 left-2 z-10 bg-white/80 p-2 rounded shadow text-sm">
@@ -211,14 +213,18 @@ function findSupportHome(placedModels, point) {
     return ([nearest.position[0] + length, 0, 0])
 }
 function isShelfSupported(lastHome, refs) {
-    console.log(refs)
+    console.log("REFS",refs)
     const raycaster = new THREE.Raycaster();
     const objects = Object.values(refs.current).filter(group => group instanceof THREE.Object3D);
+    console.log("TEsTIIII", objects)
+    // piupiu
     raycaster.set(new THREE.Vector3(lastHome[0] + 0.2, lastHome[1], lastHome[2]), new THREE.Vector3(1, 0, -0.05));
+
+    
     const intersects = raycaster.intersectObjects(objects, true)
     console.log("OSUMAT", intersects)
-    return intersects.some(i => i.object.parent.parent.parent.userData.isSupport);
-
+    console.log("OSUMAT2", intersects.some(i => i.object.parent.parent.parent.parent.userData))
+    return intersects.some(i => i.object.parent.parent.parent.parent.userData);
 }
 export default function ShelfConfigurator() {
     const [backWallWidth, setBackWallWidth] = useState(5)
@@ -389,21 +395,15 @@ export default function ShelfConfigurator() {
                         cursor="pointer"
                     >
                         <ModelWorkshop
-                            ref={el => {
-                                if (!el) return
-                                refs.current[model.id] = el
-                                el.userData.isSupport = model.isSupport
-                            }}
+			    ref={el => { if(el) refs.current[model.id] = el }}
                             model={model}
                             materialKey={model.materialKey}
                             position={model.position}
                             scale={model.scale}
                             id={model.id}
-
                         />
                     </group>
                 ))}
-                <MaterialTool swapMaterials={swapMaterials} placedModels={placedModels} refs={refs} />
 
             </Canvas>
             <button

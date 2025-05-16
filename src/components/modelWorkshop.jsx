@@ -37,7 +37,7 @@ export const ModelWorkshop = forwardRef(({ model, materialKey, attachments, posi
         if (typeof onReady === 'function') {
             onReady({ object: obj, attachments: attachmentPoints.current }, id)
         }
-    }, [model, onReady, id, ref, position])
+    }, [model, onReady, id, position])
 
     const Component = model.component
     const adjustedPosition = model.isSupport ? [position[0], 0, 0] : position
@@ -48,8 +48,8 @@ export const ModelWorkshop = forwardRef(({ model, materialKey, attachments, posi
     //console.log("KOMPONENTTI => ",model.component)
 
     return (
-        <group ref={groupRef} position={position} scale={scale} {...props}>
-            <Component ref={groupRef} position={adjustedPosition} attachments={displayAttachments} scale={scale} {...props} />
+        <group ref={groupRef} userData={model.isSupport}>
+            <Component position={adjustedPosition} attachments={displayAttachments} scale={scale} {...props} />
         </group>
     )
 })
