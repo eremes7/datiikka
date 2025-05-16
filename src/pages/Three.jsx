@@ -324,7 +324,7 @@ export default function ShelfConfigurator() {
         })
     }
     return (
-        <div className="relative w-[1200px] h-[800px] bg-gray-100">
+        <div className="relative w-[1200px] h-[800px] bg-gray-100 left-40 top-20 py-4">
 
             <ComponentPalette models={models} onSelect={handleModelSelect} />
             <BackWallWidthControl backWallWidth={backWallWidth} setBackWallWidth={setBackWallWidth} />
@@ -406,12 +406,7 @@ export default function ShelfConfigurator() {
                 ))}
 
             </Canvas>
-            <button
-                className="absolute top-2 right-2 z-20 bg-blue-500 text-white px-4 py-2 rounded"
-                onClick={() => setSwapMaterials(v => !v)}
-            >
-                Vaihda materiaalit
-            </button>
+
             <div className="absolute bottom-2 left-2 p-2 bg-white/80 text-xs rounded shadow">
                 {`Camera: x: ${coords[0]}, y: ${coords[1]}, z: ${coords[2]}`}
             </div>
