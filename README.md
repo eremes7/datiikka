@@ -7,7 +7,9 @@ FreeCAD component as Part.makeCompound([])
 Export as gltf e.g. /CAD
 run this.
 
-FILE=WRITE FILENAME HERE; \
+
+
+FILE=Support_009; \
 
 
 npx gltfjsx "$FILE.gltf" --transform -j \

@@ -13,24 +13,6 @@ import { modelList } from '../components/modelMap'
 
 
 
-function BackWallWidthControl({ backWallWidth, setBackWallWidth }) {
-    return (
-        <div className="absolute top-150 w-50 left-2 z-10 bg-white/80 p-2 rounded shadow text-sm">
-            <label className="mr-2">Back Wall Width (m):</label>
-            <input
-                type="range"
-                min="1"
-                max="10"
-                step="0.1"
-                value={backWallWidth}
-                onChange={(e) => setBackWallWidth(parseFloat(e.target.value))}
-                className="mr-2"
-            />
-            <span>{backWallWidth.toFixed(1)}</span>
-        </div>
-    )
-}
-
 function CameraCoords({ setCoords }) {
     const { camera } = useThree()
     useFrame(() => {
@@ -92,15 +74,15 @@ export function BackWallPlane({
             </mesh>
 
             {showGrid && (
-                <gridHelper
-                    args={[
-                        50,
-                        200,
-                        0x444444
-                    ]}
+                <group
+                    position={[10, 0, -0.2452]}
                     rotation={[Math.PI / 2, 0, 0]}
-                    position={[0, 0, -0.2452]}
-                />
+                    scale={[100, 1, 1]}         // Z-akselin skaalaksi 0: vain X-viivat
+                >
+                    <gridHelper
+                        args={[50, 200, 0x444444, 0x444444]}
+                    />
+                </group>
             )}
         </group>
     )
@@ -213,14 +195,14 @@ function findSupportHome(placedModels, point) {
     return ([nearest.position[0] + length, 0, 0])
 }
 function isShelfSupported(lastHome, refs) {
-    console.log("REFS",refs)
+    console.log("REFS", refs)
     const raycaster = new THREE.Raycaster();
     const objects = Object.values(refs.current).filter(group => group instanceof THREE.Object3D);
     console.log("TEsTIIII", objects)
     // piupiu
     raycaster.set(new THREE.Vector3(lastHome[0] + 0.2, lastHome[1], lastHome[2]), new THREE.Vector3(1, 0, -0.05));
 
-    
+
     const intersects = raycaster.intersectObjects(objects, true)
     console.log("OSUMAT", intersects)
     console.log("OSUMAT2", intersects.some(i => i.object.parent.parent.parent.parent.userData))
@@ -324,21 +306,20 @@ export default function ShelfConfigurator() {
         })
     }
     return (
-        <div className="relative w-[1200px] h-[800px] bg-gray-100 left-40 top-20 py-4">
+        <div className="relative w-[1200px] h-[800px] bg-gray-100 left-35 top-20 py-4">
 
             <ComponentPalette models={models} onSelect={handleModelSelect} />
-            <BackWallWidthControl backWallWidth={backWallWidth} setBackWallWidth={setBackWallWidth} />
             <Canvas
                 shadows
                 gl={{ antialias: true }}
                 camera={{ position: [0, 2.22, 3.67], fov: 50 }}
-                className="relative outline top-0 left-60 right-80 max-w-4/6 max-h-4/6">
+                className="relative outline top-0 left-80 right-80 max-w-4/6 max-h-4/6">
                 <Room backWallWidth={backWallWidth} />
                 <CameraCoords setCoords={setCoords} />
                 <CanvasTools
                     backWallWidth={backWallWidth}
                     setCoords={setCoords}
-                    cameraTarget={[-0, 1, -0]}
+                    cameraTarget={[-0, 1, -2]}
                     lightIntensity={1}
                     showAxis={false}
                 />
@@ -395,7 +376,7 @@ export default function ShelfConfigurator() {
                         cursor="pointer"
                     >
                         <ModelWorkshop
-			    ref={el => { if(el) refs.current[model.id] = el }}
+                            ref={el => { if (el) refs.current[model.id] = el }}
                             model={model}
                             materialKey={model.materialKey}
                             position={model.position}

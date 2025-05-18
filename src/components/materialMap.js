@@ -5,7 +5,7 @@ export const materialBank = {
     displacementMap: '/textures/Wood092/Wood092_1K-JPG_Displacement.jpg',
     roughnessMap: '/textures/Wood092/Wood092_1K-JPG_Roughness.jpg',
     displacementScale: 0.001,
-    roughness: 0.8,
+    roughness: 0.0,
     metalness: 0.0,
   },
   black: {
@@ -14,8 +14,8 @@ export const materialBank = {
     displacementMap: '/textures/Metal027/Metal027_1K-JPG_Displacement.jpg',
     roughnessMap: '/textures/Metal027/Metal027_1K-JPG_Roughness.jpg',
     displacementScale: 0.001,
-    roughness: 0.6,
-    metalness: 0.8,
+    roughness: 0.0,
+    metalness: 0.0,
   },
   white: {
     map: '/textures/Paper001/Paper001_1K-JPG_Color.jpg',
@@ -23,8 +23,8 @@ export const materialBank = {
     displacementMap: '/textures/Paper001/Paper001_1K-JPG_Displacement.jpg',
     roughnessMap: '/textures/Paper001/Paper001_1K-JPG_Roughness.jpg',
     displacementScale: 0.001,
-    roughness: 0.3,
-    metalness: 0.1,
+    roughness: 0.0,
+    metalness: 0.0,
   }
 }
 

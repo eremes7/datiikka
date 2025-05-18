@@ -10,13 +10,13 @@ export function ComponentPalette({ models, onSelect }) {
     ]
 
     return (
-        <div className="absolute left-2 top-2 z-10 bg-white/80 p-2 rounded shadow text-sm w-55">
+        <div className="absolute left-2 top-2 z-10 bg-white/80 p-2 rounded shadow text-sm w-70">
             <div className="font-semibold mb-2">Palette: (Click a material)</div>
 
             {models.map((model, i) => (
                 <div
                     key={i}
-                    className="flex items-center border border-black h-11 w-50 p-2 mb-2 bg-white"
+                    className="flex items-center border border-black h-11 w-63 p-2 mb-2 bg-white"
                 >
                     {model.name}
                     <div

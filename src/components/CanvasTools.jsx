@@ -1,26 +1,38 @@
 import React from 'react'
-import { OrbitControls } from '@react-three/drei'
-import { AxesHelper } from 'three'
+import { DollyControls } from './DollyControls'
 
+
+function RoomLights({ lightPosition, lightIntensity, lightColor }) {
+
+
+    return (
+        <pointLight distance={115}
+            castShadow
+            position={lightPosition}
+            intensity={lightIntensity + Math.PI}
+            shadow-mapSize-width={1024}
+            shadow-mapSize-height={1024}
+            shadow-camera-near={0.5}
+            shadow-camera-far={20}
+            shadow-camera-left={-10}
+            shadow-camera-right={10}
+            shadow-camera-top={10}
+            shadow-camera-bottom={-10}
+        />
+    )
+}
 
 export default function CanvasTools({ backWallWidth, setCoords, cameraTarget, lightIntensity, showAxis }) {
     return (
         <>
-            <pointLight distance={115} 
-                castShadow
-                position={[0, 2, 2]}
-                intensity={lightIntensity+ Math.PI}
-                shadow-mapSize-width={1024}
-                shadow-mapSize-height={1024}
-                shadow-camera-near={0.5}
-                shadow-camera-far={20}
-                shadow-camera-left={-10}
-                shadow-camera-right={10}
-                shadow-camera-top={10}
-                shadow-camera-bottom={-10}
+            <RoomLights lightPosition={[-2, 2, 2]} lightIntensity={lightIntensity} />
+            <RoomLights lightPosition={[2, 2, 2]} lightIntensity={lightIntensity} />
+            <DollyControls
+                radius={3}
+                height={2.5}
+                target={cameraTarget}
+                sensitivity={0.007}
             />
-
-            <OrbitControls target={cameraTarget} />
             {showAxis && (
                 <axesHelper args={[5]} />
             )}

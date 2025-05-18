@@ -15,6 +15,9 @@ export default function FrontPage() {
         <h1 className="absolute top-100 left-8 text-white text-4xl font-bold">
           Etusivu
         </h1>
+        <img src='/imgs/rend22.png'/>
+        <img src='/imgs/rend23.png'/>
+
       </div>
     )
   }
