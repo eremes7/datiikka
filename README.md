@@ -7,12 +7,12 @@ FreeCAD component as Part.makeCompound([])
 Export as gltf e.g. /CAD
 run this.
 
+cd ~/hooli/CAD
+
+FILE=Support_020; \
 
 
-FILE=Support_009; \
-
-
-npx gltfjsx "$FILE.gltf" --transform -j \
+npx gltfjsx "$FILE.glb" --transform -j \
     && mv "${FILE}-transformed.glb" ../public/ \
     && mkdir -p "../src/3D_objektit/$FILE" \
     && mv "${FILE}.jsx" "../src/3D_objektit/$FILE/"

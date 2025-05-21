@@ -1,7 +1,7 @@
 
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
-import CanvasTools from '../components/CanvasTools'
+import CanvasTools from '../components/shelf-configurator/CanvasTools'
 
 
 export default function TestScene() {

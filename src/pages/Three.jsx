@@ -1,15 +1,19 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { Canvas } from '@react-three/fiber'
-import CanvasTools from '../components/CanvasTools'
-import { MaterialTool } from '../components/MaterialTool'
+import CanvasTools from '../components/shelf-configurator/CanvasTools'
+import { preloadMaterialTextures } from '../components/shelf-configurator/utils/preloadMaterialTextures'
 import { useFrame, useThree } from '@react-three/fiber'
-import { ModelWorkshop } from '../components/modelWorkshop'
+import { ModelWorkshop } from '../components/shelf-configurator/modelWorkshop'
 import { Line } from '@react-three/drei'
-import { Room } from '../components/Room'
+import { Room } from '../components/shelf-configurator/Room'
 import * as THREE from 'three';
-import ComponentPalette from '../components/ComponentPalette'
-import { modelList } from '../components/modelMap'
-
+import ComponentPalette from '../components/shelf-configurator/ComponentPalette'
+import { modelList } from '../components/shelf-configurator/utils/modelMap'
+import { findSupportHome } from '../components/shelf-configurator/utils/findSupportHome'
+import { findNewHome } from '../components/shelf-configurator/utils/findNewHome'
+import { isShelfSupported } from '../components/shelf-configurator/utils/isShelfSupport'
+import { ClickPlane } from '../components/shelf-configurator/ClickPane'
+import { BackWallPlane } from '../components/shelf-configurator/BackWallPlane'
 
 
 
@@ -20,73 +24,8 @@ function CameraCoords({ setCoords }) {
     })
     return null
 }
-function ClickPlane({ onClick, onHover }) {
-    const { viewport } = useThree()
-    return (
-        <mesh
-            rotation={[-Math.PI / 2, 0, 0]}
-            position={[0, 0.01, 0]}
-            onPointerMove={e => {
-                const p = e.point.clone()
-                if (p.z < -1.5) {
-                    p.y = -(p.z + 1.5)
-                    p.z = -1.3
-                }
-                onHover([p.x, p.y, p.z])
-            }}
-            onPointerDown={e => {
-                const p = e.point.clone()
-                if (p.z < -1.3) {
-                    p.y = -(p.z + 1.3)
-                    p.z = -1.3
-                }
-                onClick({ x: p.x, y: p.y, z: p.z })
-            }}
-        >
-            <planeGeometry args={[viewport.width, viewport.height]} />
-            <meshBasicMaterial visible={false} />
-        </mesh>
-    )
-}
-export function BackWallPlane({
-    backWallWidth,
-    backWallHeight,
-    onHover,
-    onClick,
-    showGrid = true,    // new prop
-}) {
-    return (
-        <group position={[0, backWallHeight / 2, 0]}>
-            <mesh
-                onPointerMove={e => {
-                    e.stopPropagation()
-                    const { x, y, z } = e.point
-                    onHover([x, y, z])
-                }}
-                onClick={e => {
-                    e.stopPropagation()
-                    const { x, y, z } = e.point
-                    onClick({ x, y, z })
-                }}
-            >
-                <planeGeometry transparent opacity={0} args={[backWallWidth, backWallHeight]} />
-                <meshBasicMaterial transparent opacity={0} />
-            </mesh>
 
-            {showGrid && (
-                <group
-                    position={[10, 0, -0.2452]}
-                    rotation={[Math.PI / 2, 0, 0]}
-                    scale={[100, 1, 1]}         // Z-akselin skaalaksi 0: vain X-viivat
-                >
-                    <gridHelper
-                        args={[50, 200, 0x444444, 0x444444]}
-                    />
-                </group>
-            )}
-        </group>
-    )
-}
+
 
 function AnchorMarker({ position }) {
     const [shiny, setShiny] = useState(false)
@@ -106,34 +45,7 @@ function AnchorMarker({ position }) {
     )
 }
 
-function findNewHome(selectedPreview, worldAttachments, placedModels) {
-    if (!worldAttachments.length || !placedModels.some(m => m.isSupport)) return;
 
-    let best = {
-        dist: Infinity,
-        pair: null,
-        place: null
-    };
-
-    for (const support of placedModels) {
-        if (support.isSupport) {
-            for (const point of support.attachments) {
-                const dx = point[0] - worldAttachments[0];
-                const dy = point[1] - worldAttachments[1];
-                const dz = point[2] - worldAttachments[2];
-                const d = Math.hypot(dx, dy, dz);
-                if (d < best.dist) {
-                    best.dist = d;
-                    best.place = point;
-
-                }
-            }
-        }
-    }
-
-
-    return best.place;
-}
 export function SupportSpotAssist({ placedModels, hoverPosition }) {
     const supports = placedModels.filter(m => m.isSupport)
     if (!supports.length) return null
@@ -147,7 +59,8 @@ export function SupportSpotAssist({ placedModels, hoverPosition }) {
 
     const dx = hoverPosition[0] - nearest.position[0]
     const sign = Math.sign(dx) || 1
-    const length = sign * (Math.abs(dx) < 0.9 ? 0.7 : 1.0)
+    //const length = sign * (Math.abs(dx) < 0.9 ? 0.7 : 1.0)
+    const length = sign * 0.7
 
     return (
         <group>
@@ -172,42 +85,15 @@ export function SupportSpotAssist({ placedModels, hoverPosition }) {
 }
 function findProperHomeForAttachments(placedModels, point, selectedPreview) {
     const attachmentSet = selectedPreview.attachments
-    attachmentSet.forEach(i => i[0] = findSupportHome(placedModels, point)[0] - 0.01)
-
-    return attachmentSet
-
-
+    console.log("asgdsagdasgd", attachmentSet)
+    attachmentSet.forEach(i => {
+        i.x = findSupportHome(placedModels, point)[0] - 0.01
+    });
+    const asArray = attachmentSet.map(vec => [vec.x, vec.y, vec.z])
+    return asArray
 }
-function findSupportHome(placedModels, point) {
-    const supports = placedModels.filter(m => m.isSupport)
-    if (!placedModels.some(m => m.isSupport)) return [point.x, 0, -0.3]
-
-    const nearest = supports.reduce((best, curr) => {
-        return Math.abs(point.x - curr.position[0]) <
-            Math.abs(point.x - best.position[0])
-            ? curr
-            : best
-    }, supports[0])
-
-    const dx = point.x - nearest.position[0]
-    const sign = Math.sign(dx) || 1
-    const length = sign * (Math.abs(dx) < 0.9 ? 0.75 : 1.0)
-    return ([nearest.position[0] + length, 0, 0])
-}
-function isShelfSupported(lastHome, refs) {
-    console.log("REFS", refs)
-    const raycaster = new THREE.Raycaster();
-    const objects = Object.values(refs.current).filter(group => group instanceof THREE.Object3D);
-    console.log("TEsTIIII", objects)
-    // piupiu
-    raycaster.set(new THREE.Vector3(lastHome[0] + 0.2, lastHome[1], lastHome[2]), new THREE.Vector3(1, 0, -0.05));
 
 
-    const intersects = raycaster.intersectObjects(objects, true)
-    console.log("OSUMAT", intersects)
-    console.log("OSUMAT2", intersects.some(i => i.object.parent.parent.parent.parent.userData))
-    return intersects.some(i => i.object.parent.parent.parent.parent.userData);
-}
 export default function ShelfConfigurator() {
     const [backWallWidth, setBackWallWidth] = useState(5)
     const [coords, setCoords] = useState([0, 0, 0])
@@ -223,7 +109,9 @@ export default function ShelfConfigurator() {
 
     useEffect(() => {
         setModels(modelList)
+        preloadMaterialTextures()
     }, [])
+
 
     useEffect(() => {
         if (
@@ -232,7 +120,6 @@ export default function ShelfConfigurator() {
             selectedModel.isSupport ||
             !placedModels.length
         ) return;
-
         const newHome = findNewHome(selectedPreview, hoverPosition, placedModels)
         setLastHome(newHome)
     }, [hoverPosition, selectedModel, selectedPreview, placedModels])
@@ -240,7 +127,7 @@ export default function ShelfConfigurator() {
 
 
     async function handleModelSelect(model, materialKey) {
-        console.log("From Three!", model, materialKey)
+        console.log("From Three, handleModelSelect!, ", model, materialKey)
         setSelectedModel(model)
         setSelectedMaterial(materialKey)
         setSelectedPreview({
@@ -254,21 +141,20 @@ export default function ShelfConfigurator() {
     }
     function handleCanvasClick(point) {
         if (!selectedModel || !selectedPreview?.attachments) return;
-        console.log(lastHome)
+        //console.log(lastHome)
         // HUOMAA, ETTÄ TÄMÄ LASKEE VAIN SUPPORTILLE OIKEIN, OLETAMME, ETTÄ EN TARVITSE HYLLY ATTACHMENTTEJÄ JATKOSSA!
-        console.log(placedModels)
+        console.log("selectedPreview, handleCanvasClick:, ", selectedPreview)
 
         const basePosition = [point.x, point.y, 0]
         const pieceDimOffset = selectedPreview.attachments || [];
         const worldAttachments = pieceDimOffset.map(off => ([
-            basePosition[0] + off[0],
-            basePosition[1] + off[1],
-            basePosition[2] + off[2],
+            basePosition[0] + off.x,
+            basePosition[1] + off.y,
+            basePosition[2] + off.z,
         ]));
         // TARKASTETAAN MOLEMMINPUOLINEN TUKI
         //
-
-        console.log(placedModels)
+        console.log("From handleCanvasClick!", worldAttachments)
         if (!selectedPreview.component.isSupport &&
             !isShelfSupported(lastHome, refs)) {
             console.warn('Hyllyllä ei ole tukea molemmin puolin');
@@ -284,6 +170,7 @@ export default function ShelfConfigurator() {
             scale: [1, 1, 1],
             attachments: selectedModel.isSupport ? findProperHomeForAttachments(placedModels, point, selectedPreview) : worldAttachments,
         };
+        console.log("Uusi malli!: ", newModel)
         setPlacedModels(prev => [...prev, newModel]);
         setSelectedModel(null);
         setSelectedPreview(null);
@@ -322,6 +209,7 @@ export default function ShelfConfigurator() {
                     cameraTarget={[-0, 1, -2]}
                     lightIntensity={1}
                     showAxis={false}
+                    isDev={true}
                 />
 
                 <BackWallPlane
