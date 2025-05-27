@@ -1,5 +1,5 @@
 import { useTexture } from '@react-three/drei'
-import { materialBank } from '../utils/materialMap'
+import { materialBank } from './materialMap'
 
 export function preloadMaterialTextures() {
   Object.values(materialBank).forEach(mat => {

@@ -1,4 +1,4 @@
-import { materialBank } from "./utils/materialMap"
+import { materialBank } from './utils/materialMap'
 
 export function ComponentPalette({ models, onSelect }) {
     if (!models) return null

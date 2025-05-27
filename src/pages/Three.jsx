@@ -14,85 +14,11 @@ import { findNewHome } from '../components/shelf-configurator/utils/findNewHome'
 import { isShelfSupported } from '../components/shelf-configurator/utils/isShelfSupport'
 import { ClickPlane } from '../components/shelf-configurator/ClickPane'
 import { BackWallPlane } from '../components/shelf-configurator/BackWallPlane'
-
-
-
-function CameraCoords({ setCoords }) {
-    const { camera } = useThree()
-    useFrame(() => {
-        setCoords(camera.position.toArray().map(val => val.toFixed(2)))
-    })
-    return null
-}
-
-
-
-function AnchorMarker({ position }) {
-    const [shiny, setShiny] = useState(false)
-    return (
-        <mesh
-            position={position}
-            onPointerEnter={() => setShiny(true)}
-            onPointerLeave={() => setShiny(false)}
-        >
-            <sphereGeometry args={[0.05, 16, 16]} />
-            <meshPhongMaterial
-                color={shiny ? 0xffff00 : 0xffffff}
-                emissive={shiny ? 0xffff00 : 0x000000}
-                shininess={100}
-            />
-        </mesh>
-    )
-}
-
-
-export function SupportSpotAssist({ placedModels, hoverPosition }) {
-    const supports = placedModels.filter(m => m.isSupport)
-    if (!supports.length) return null
-
-    const nearest = supports.reduce((best, curr) => {
-        return Math.abs(hoverPosition[0] - curr.position[0]) <
-            Math.abs(hoverPosition[0] - best.position[0])
-            ? curr
-            : best
-    }, supports[0])
-
-    const dx = hoverPosition[0] - nearest.position[0]
-    const sign = Math.sign(dx) || 1
-    //const length = sign * (Math.abs(dx) < 0.9 ? 0.7 : 1.0)
-    const length = sign * 0.7
-
-    return (
-        <group>
-            <Line
-                points={[[nearest.position[0], 0, 0], [nearest.position[0] + length, 0, 0]]}
-                lineWidth={7}
-            />
-            {supports.map(support => (
-
-                <Line
-                    key={support.id}
-                    points={[
-                        [support.position[0], 0, 0],  // alku Z=0
-                        [support.position[0], 0, 5]   // loppu Z=5
-                    ]}
-                    lineWidth={1}          // ohut viiva
-                    color="red"            // punainen
-                />
-            ))}
-        </group>
-    )
-}
-function findProperHomeForAttachments(placedModels, point, selectedPreview) {
-    const attachmentSet = selectedPreview.attachments
-    console.log("asgdsagdasgd", attachmentSet)
-    attachmentSet.forEach(i => {
-        i.x = findSupportHome(placedModels, point)[0] - 0.01
-    });
-    const asArray = attachmentSet.map(vec => [vec.x, vec.y, vec.z])
-    return asArray
-}
-
+import { AnchorMarker } from '../components/shelf-configurator/AnchorMarket'
+import { SupportSpotAssist } from '../components/shelf-configurator/SupportSpotAssist'
+import { CameraCoords } from '../components/shelf-configurator/utils/CameraCoords'
+import { PlacedModelSidebar } from '../components/shelf-configurator/PlacedModelSidebar'
+import { findProperHomeForAttachments } from '../components/shelf-configurator/utils/findProperHomeForAttachments'
 
 export default function ShelfConfigurator() {
     const [backWallWidth, setBackWallWidth] = useState(5)
@@ -185,6 +111,7 @@ export default function ShelfConfigurator() {
             setSelectedPreview({
                 component: picked,
                 position: picked.position,
+		materialKey: picked.materialKey,
                 scale: picked.scale,
                 id: picked.id,
                 attachments: picked.attachments,
@@ -275,6 +202,11 @@ export default function ShelfConfigurator() {
                 ))}
 
             </Canvas>
+	    
+	    <PlacedModelSidebar
+		    placedModels={placedModels}
+		    setPlacedModels={setPlacedModels}
+	    />
 
             <div className="absolute bottom-2 left-2 p-2 bg-white/80 text-xs rounded shadow">
                 {`Camera: x: ${coords[0]}, y: ${coords[1]}, z: ${coords[2]}`}
