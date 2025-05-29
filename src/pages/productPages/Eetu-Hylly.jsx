@@ -3,7 +3,13 @@
 export function EetuHylly(){
     return(
         <div>
-            Eetu-Hylly :D
+
+	Eetu-Hylly tuotesivu
+
+	komponentit
+
+	Esiasetuksia
+
         </div>
     )
 }

@@ -1,9 +1,11 @@
+// src/components/Navibar.jsx
 import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { GlobeAltIcon, ShoppingBagIcon } from '@heroicons/react/24/outline'
-
+import { useCart } from '../context/CartContext' 
 
 export default function Navibar({ items }) {
+  const { items: cartItems, toggleCart } = useCart()
   const [show, setShow]        = useState(true)
   const [lastScrollY, setLast] = useState(0)
 
@@ -26,6 +28,7 @@ export default function Navibar({ items }) {
       `}
     >
       <div className="max-w-8xl mx-auto h-full px-4 flex items-center justify-between">
+        {/* Navigaatiolinkit */}
         <div className="flex items-center space-x-6">
           {items.map(({ to, label }) => (
             <NavLink
@@ -37,32 +40,31 @@ export default function Navibar({ items }) {
             </NavLink>
           ))}
         </div>
-	<div className="flex space-x-2 items-center ml-auto">
-	    <GlobeAltIcon className="center w-7 h-7"/>
-	    <select
-		disabled
-		className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white cursor-not-allowed"
-		>
-		<option>Suomi</option>
-		<option>English</option>
-	    </select>
 
-      {/* Kauppakassi */}
-	  <button
-	    type="button"
-	    className="
-	      flex items-center justify-center 
-		w-10 space-x-6
-	      p-2 rounded-full 
-	      bg-gray-100 hover:bg-gray-200 
-	      transition-colors
-	    "
-	  >
-	    <ShoppingBagIcon className="space-x-6 w-6 h-6 text-gray-600" />
-	  </button>
+        <div className="flex items-center space-x-4">
+          <GlobeAltIcon className="w-7 h-7 text-gray-600" />
+          <select
+            disabled
+            className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white cursor-not-allowed"
+          >
+            <option>Suomi</option>
+            <option>English</option>
+          </select>
 
-	</div>
-
+          {/* Kauppakassi */}
+          <button
+            type="button"
+            onClick={() => toggleCart() }
+            className="relative flex items-center justify-center w-10 h-10 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+          >
+            <ShoppingBagIcon className="w-6 h-6 text-gray-600" />
+            {cartItems.length > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                {cartItems.reduce((sum, i) => sum + i.quantity, 0)}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
     </nav>
   )
