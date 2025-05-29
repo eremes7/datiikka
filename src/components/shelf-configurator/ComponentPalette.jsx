@@ -4,9 +4,9 @@ export function ComponentPalette({ models, onSelect }) {
     if (!models) return null
 
     const materials = [
-        { key: "wood", img: materialBank.wood.map },
-        { key: "black", img: materialBank.black.map },
-        { key: "white", img: materialBank.white.map },
+        { key: "wood", value: materialBank.wood.map },
+        { key: "black", value: materialBank.black.map },
+        { key: "white", value: materialBank.white.map },
     ]
 
     return (
@@ -19,6 +19,7 @@ export function ComponentPalette({ models, onSelect }) {
                     className="flex items-center border border-black h-11 w-63 p-2 mb-2 bg-white"
                 >
                     {model.name}
+
                     <div
                         className="w-16 h-16 bg-center bg-contain bg-no-repeat"
                         style={{ backgroundImage: `url(${materialBank.shelf})` }}
@@ -26,14 +27,21 @@ export function ComponentPalette({ models, onSelect }) {
 
                     {/* Materiaalinapit */}
                     <div className="flex space-x-2 ml-auto">
-                        {materials.map(({ key, img }) => (
-                            <button
-                                key={key}
-                                onClick={() => onSelect(model, key)}
-                                className="w-5 h-5 bg-center bg-cover rounded border border-gray-300"
-                                style={{ backgroundImage: `url(${img})` }}
-                            />
-                        ))}
+                        {materials.map(({ key, value }) => {
+                            const isHex = typeof value === 'string' && value.startsWith('#')
+                            return (
+                                <button
+                                    key={key}
+                                    onClick={() => onSelect(model, key)}
+                                    className="w-5 h-5 rounded border border-gray-300"
+                                    style={
+                                        isHex
+                                            ? { backgroundColor: value }
+                                            : { backgroundImage: `url(${value})`, backgroundSize: 'cover' }
+                                    }
+                                />
+                            )
+                        })}
                     </div>
                 </div>
             ))}

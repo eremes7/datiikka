@@ -16,7 +16,7 @@ export function SupportSpotAssist({ placedModels, hoverPosition }) {
     const dx = hoverPosition[0] - nearest.position[0]
     const sign = Math.sign(dx) || 1
     //const length = sign * (Math.abs(dx) < 0.9 ? 0.7 : 1.0)
-    const length = sign * 0.7
+    const length = sign * 0.75
 
     return (
         <group>

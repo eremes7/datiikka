@@ -2,11 +2,8 @@ import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { Canvas } from '@react-three/fiber'
 import CanvasTools from '../components/shelf-configurator/CanvasTools'
 import { preloadMaterialTextures } from '../components/shelf-configurator/utils/preloadMaterialTextures'
-import { useFrame, useThree } from '@react-three/fiber'
 import { ModelWorkshop } from '../components/shelf-configurator/modelWorkshop'
-import { Line } from '@react-three/drei'
 import { Room } from '../components/shelf-configurator/Room'
-import * as THREE from 'three';
 import ComponentPalette from '../components/shelf-configurator/ComponentPalette'
 import { modelList } from '../components/shelf-configurator/utils/modelMap'
 import { findSupportHome } from '../components/shelf-configurator/utils/findSupportHome'
@@ -19,6 +16,7 @@ import { SupportSpotAssist } from '../components/shelf-configurator/SupportSpotA
 import { CameraCoords } from '../components/shelf-configurator/utils/CameraCoords'
 import { PlacedModelSidebar } from '../components/shelf-configurator/PlacedModelSidebar'
 import { findProperHomeForAttachments } from '../components/shelf-configurator/utils/findProperHomeForAttachments'
+import { Effects } from '../components/shelf-configurator/Effects'
 
 export default function ShelfConfigurator() {
     const [backWallWidth, setBackWallWidth] = useState(5)
@@ -111,7 +109,7 @@ export default function ShelfConfigurator() {
             setSelectedPreview({
                 component: picked,
                 position: picked.position,
-		materialKey: picked.materialKey,
+                materialKey: picked.materialKey,
                 scale: picked.scale,
                 id: picked.id,
                 attachments: picked.attachments,
@@ -138,7 +136,7 @@ export default function ShelfConfigurator() {
                     showAxis={false}
                     isDev={true}
                 />
-
+                <Effects />
                 <BackWallPlane
                     backWallWidth={2 + backWallWidth}
                     backWallHeight={5}
@@ -202,11 +200,11 @@ export default function ShelfConfigurator() {
                 ))}
 
             </Canvas>
-	    
-	    <PlacedModelSidebar
-		    placedModels={placedModels}
-		    setPlacedModels={setPlacedModels}
-	    />
+
+            <PlacedModelSidebar
+                placedModels={placedModels}
+                setPlacedModels={setPlacedModels}
+            />
 
             <div className="absolute bottom-2 left-2 p-2 bg-white/80 text-xs rounded shadow">
                 {`Camera: x: ${coords[0]}, y: ${coords[1]}, z: ${coords[2]}`}

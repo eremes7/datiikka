@@ -9,7 +9,7 @@ run this.
 
 cd ~/hooli/CAD
 
-FILE=Support_020; \
+FILE=Shelf_001; \
 
 
 npx gltfjsx "$FILE.glb" --transform -j \

@@ -27,8 +27,8 @@ export default function CanvasTools({ backWallWidth, setCoords, cameraTarget, li
         <>
             <RoomLights lightPosition={[-2, 2, 2]} lightIntensity={lightIntensity} />
             <RoomLights lightPosition={[2, 2, 2]} lightIntensity={lightIntensity} />
-            <RoomLights lightPosition={[-3, 2, 0]} lightIntensity={lightIntensity} />
-            <RoomLights lightPosition={[3, 2, 0]} lightIntensity={lightIntensity} />
+            <RoomLights lightPosition={[-3, 2, 2]} lightIntensity={lightIntensity} />
+            <RoomLights lightPosition={[0, 2, 0]} lightIntensity={lightIntensity} />
             {isDev ? (
                 <OrbitControls 
                     target={cameraTarget}
