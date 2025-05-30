@@ -2,9 +2,9 @@ import React from 'react'
 import { DollyControls } from './DollyControls'
 import { Room } from './Room'
 import { OrbitControls } from '@react-three/drei'
+
+
 function RoomLights({ lightPosition, lightIntensity, lightColor }) {
-
-
     return (
         <pointLight distance={115}
             castShadow

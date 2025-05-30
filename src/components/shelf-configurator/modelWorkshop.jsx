@@ -8,17 +8,21 @@ export const ModelWorkshop = forwardRef(({ model, materialKey, attachments, posi
     const attachmentPoints = useRef([])
     const groupRef = useRef()
     const mats = useMaterialTextures(materialKey)
-
-
+    const prevMatsRef = useRef(null)
+    useImperativeHandle(ref, () => groupRef.current, [groupRef.current])
 
     useLayoutEffect(() => {
+        if (!mats || prevMatsRef.current === mats) return
+        prevMatsRef.current = mats
+
+
+        
         const obj = (ref && ref.current) || groupRef.current
         if (!obj || !mats) return
         if (obj.isMesh) {
             const newMat = new MeshStandardMaterial({ ...mats })
             obj.material = newMat
             obj.material.needsUpdate = true
-
             return
         }
         obj.traverse((child) => {
@@ -29,12 +33,14 @@ export const ModelWorkshop = forwardRef(({ model, materialKey, attachments, posi
                 child.material.needsUpdate = true
             }
         })
-    }, [model, mats])
-    useImperativeHandle(ref, () => groupRef.current, [groupRef.current])
+    }, [model])
+
+
+    
     useEffect(() => {
         const obj = (ref && ref.current) || groupRef.current
         if (!obj.children[0].children) return
-
+        console.log("iik minut ajettiin")
         attachmentPoints.current = []
 
         for (const obj2 of obj.children[0].children) {
@@ -45,7 +51,12 @@ export const ModelWorkshop = forwardRef(({ model, materialKey, attachments, posi
         if (typeof onReady === 'function') {
             onReady({ object: obj, attachments: attachmentPoints.current }, id)
         }
-    }, [model, onReady, id, position])
+    }, [model, onReady, id])
+
+
+
+
+
 
     const Component = model.component
     const adjustedPosition = model.isSupport ? [position[0], 0, 0] : position

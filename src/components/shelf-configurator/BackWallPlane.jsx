@@ -10,7 +10,7 @@ export function BackWallPlane({
     showGrid = true,    // new prop
 }) {
     return (
-        <group position={[0, backWallHeight / 2, 0]}>
+        <group position={[0, backWallHeight / 2, -10]}>
             <mesh
                 onPointerMove={e => {
                     e.stopPropagation()

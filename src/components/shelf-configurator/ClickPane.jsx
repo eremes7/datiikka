@@ -1,11 +1,11 @@
 import { useThree } from "@react-three/fiber"
 
 export function ClickPlane({ onClick, onHover }) {
-    const { viewport } = useThree()
+    //const { viewport } = useThree()
     return (
         <mesh
             rotation={[-Math.PI / 2, 0, 0]}
-            position={[0, 0.01, 0]}
+            position={[0,0.1,1.3]}
             onPointerMove={e => {
                 const p = e.point.clone()
                 if (p.z < -1.5) {
@@ -23,8 +23,9 @@ export function ClickPlane({ onClick, onHover }) {
                 onClick({ x: p.x, y: p.y, z: p.z })
             }}
         >
-            <planeGeometry args={[viewport.width, viewport.height]} />
+            <planeGeometry args={[7, 3, 3]} />
             <meshBasicMaterial visible={false} />
         </mesh>
     )
 }
+

@@ -96,7 +96,7 @@ export function Room({ backWallWidth }) {
         <group>
             {/* Lattia (Wood092) */}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 2.5]} receiveShadow>
-                <planeGeometry args={[14, 12, 64, 64]} />
+                <planeGeometry args={[14, 7, 64, 64]} />
                 <WoodFloor textureProps={woodFloorProps} />
             </mesh>
 

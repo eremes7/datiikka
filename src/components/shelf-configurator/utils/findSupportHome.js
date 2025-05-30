@@ -1,6 +1,7 @@
 
 export function findSupportHome(placedModels, point) {
     const supports = placedModels.filter(m => m.isSupport)
+    console.log("POINT X SUPPORT ASETTELUSTA ON:", point.x)
     if (!placedModels.some(m => m.isSupport)) return [point.x, 0, -0.3]
 
     const nearest = supports.reduce((best, curr) => {

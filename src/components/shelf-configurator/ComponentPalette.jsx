@@ -10,7 +10,7 @@ export function ComponentPalette({ models, onSelect }) {
     ]
 
     return (
-        <div className="absolute left-2 top-2 z-10 bg-white/80 p-2 rounded shadow text-sm w-70">
+        <div className="flex flex-col left-2 top-2 z-10 bg-white/80 p-2 rounded shadow text-sm w-70">
             <div className="font-semibold mb-2">Palette: (Click a material)</div>
 
             {models.map((model, i) => (
