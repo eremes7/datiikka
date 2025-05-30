@@ -232,7 +232,7 @@ export default function ShelfConfigurator() {
                             showAxis={false}
                             isDev={true}
                         />
-
+                        <Effects />
                         <BackWallPlane
                             backWallWidth={2 + backWallWidth}
                             backWallHeight={5}
@@ -275,7 +275,7 @@ export default function ShelfConfigurator() {
                                 }}
                             />
                         )}
-                        <Effects />
+
                         {placedModels.map(model => (
                             <Select enabled={settingsModel?.id === model.id} key={model.id}>
                                 <group
