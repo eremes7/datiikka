@@ -12,7 +12,7 @@ export default function BasketSidebar() {
       {/* Overlay, klikkaus sulkee */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          className="fixed inset-0 bg-black/20 z-[10001]"
           onClick={toggleCart}
         />
       )}
@@ -20,7 +20,7 @@ export default function BasketSidebar() {
       {/* Slide-over-paneeli */}
       <div
         className={`
-          fixed inset-y-0 right-0 w-full max-w-md bg-white z-50
+          fixed inset-y-0 right-0 w-full max-w-md bg-white z-[10001]
           transform transition-transform duration-300
           ${isOpen ? 'translate-x-0' : 'translate-x-full'}
         `}

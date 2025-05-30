@@ -18,8 +18,8 @@ const navItems = [
 function App() {
   return (
     <BrowserRouter>
-      <Navibar items={navItems} />
       <BasketSidebar />
+      <Navibar items={navItems} />
       <main className="pt-16 p-4">
         <Routes>
           <Route path="/"                element={<FrontPage />} />

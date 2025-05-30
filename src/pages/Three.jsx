@@ -132,7 +132,7 @@ export default function ShelfConfigurator() {
                     backWallWidth={backWallWidth}
                     setCoords={setCoords}
                     cameraTarget={[-0, 1, -2]}
-                    lightIntensity={1}
+                    lightIntensity={10}
                     showAxis={false}
                     isDev={true}
                 />

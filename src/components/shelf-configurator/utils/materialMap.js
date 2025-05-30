@@ -20,8 +20,8 @@ export const materialBank = {
     displacementScale: 0.000,
     displacementBias: 1,
     normalScale: new Vector2(5, 5),
-    roughness: 0.7,
-    metalness: 0.3,
+    roughness: 1.0,
+    metalness: 0.0,
   },
   white: {
     map: '#fffefc',
