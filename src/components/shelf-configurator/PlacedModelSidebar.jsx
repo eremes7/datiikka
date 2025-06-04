@@ -2,6 +2,13 @@ import { materialBank } from './utils/materialMap'
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 
 export function PlacedModelSidebar({ placedModels, setPlacedModels }) {
+
+    console.log(placedModels)
+    if(placedModels){
+        for(const model of placedModels){
+            console.log(model.name)
+        }
+    }
   return (
     <aside className="w-64 p-4 bg-white shadow-inner overflow-auto">
       <h3 className="font-semibold mb-2">Placed Components</h3>
@@ -12,7 +19,7 @@ export function PlacedModelSidebar({ placedModels, setPlacedModels }) {
             className="flex items-center justify-between p-2 border rounded"
           >
             <span className="flex-1">
-              {m.component?.name || m.name}
+              {m.name}
             </span>
             <div
               className="w-6 h-6 bg-center bg-cover rounded border"
