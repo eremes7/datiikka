@@ -1,34 +1,43 @@
 // src/components/Navibar.jsx
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { NavLink } from 'react-router-dom'
 import { GlobeAltIcon, ShoppingBagIcon } from '@heroicons/react/24/outline'
-import { useCart } from '../context/CartContext' 
+import { useCart } from '../context/CartContext'
 
 export default function Navibar({ items }) {
   const { items: cartItems, toggleCart } = useCart()
-  const [show, setShow]        = useState(true)
-  const [lastScrollY, setLast] = useState(0)
+  const [show, setShow] = useState(true)
+  const [bgOpacity, setBgOpacity] = useState(0)
+  const lastScrollY = useRef(0)
 
   useEffect(() => {
-    const onScroll = () => {
+    const handleScroll = () => {
       const y = window.scrollY
-      setShow(!(y > lastScrollY && y > 50))
-      setLast(y)
+
+      // piilota navbar rullatessa alas ja näytä rullatessa ylöspäin
+      if (y > lastScrollY.current && y > 50) setShow(false)
+      else setShow(true)
+      lastScrollY.current = y
+
+      // asteittainen opacity: 0 → 1 ensimmäisten 100px aikana
+      setBgOpacity(Math.min(y / 100, 1))
     }
-    window.addEventListener('scroll', onScroll)
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [lastScrollY])
+
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   return (
     <nav
+      style={{ backgroundColor: `rgba(255,255,255,${bgOpacity})` }}
       className={`
-        bg-white fixed inset-x-0 top-0 h-16 z-[9999]
-        shadow transition-transform duration-300
+        fixed inset-x-0 top-0 h-16 z-[9999]
+        shadow transition-transform transition-colors duration-300
         ${show ? 'translate-y-0' : '-translate-y-full'}
       `}
     >
       <div className="max-w-8xl mx-auto h-full px-4 flex items-center justify-between">
-        {/* Navigaatiolinkit */}
         <div className="flex items-center space-x-6">
           {items.map(({ to, label }) => (
             <NavLink
@@ -51,10 +60,9 @@ export default function Navibar({ items }) {
             <option>English</option>
           </select>
 
-          {/* Kauppakassi */}
           <button
             type="button"
-            onClick={() => toggleCart() }
+            onClick={toggleCart}
             className="relative flex items-center justify-center w-10 h-10 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
           >
             <ShoppingBagIcon className="w-6 h-6 text-gray-600" />

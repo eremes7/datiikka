@@ -5,11 +5,14 @@ FreeCAD component as Part.makeCompound([])
     attachments named "attach_left, attach_1, attach_top ..."
 
 Export as gltf e.g. /CAD
+
+Load files to Blender. Select all from model -> Edit -> Smart UV transform -> export as glb to /CAD
+
 run this.
 
 cd ~/hooli/CAD
 
-FILE=Shelf_001; \
+FILE=CutSupport_001; \
 
 
 npx gltfjsx "$FILE.glb" --transform -j \

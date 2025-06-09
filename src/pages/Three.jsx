@@ -21,27 +21,8 @@ import { Selection } from "@react-three/postprocessing"
 import { Select } from "@react-three/postprocessing"
 import debounce from 'lodash/debounce'
 
-import { useScreenshot } from '@react-three/drei';
 
-function MyScene() {
-  const { getCanvas } = useScreenshot({
-    type: 'image/png',
-    download: false,
-    quality: 0.8,
-  });
-  
-  const takeScreenshot = async () => {
-    const dataURL = await getCanvas();
-    // dataURL on PNG-string
-  };
 
-  return (
-    <>
-      {/* 3D-objektit täällä */}
-      <button onClick={takeScreenshot}>Ota kuva</button>
-    </>
-  );
-}
 export function ModelSettings({ model, onClose, onUpdate, onMove, onDelete, style }) {
     return (
         <div style={style} className="absolute top-42 right-4 w-64 bg-white p-4 rounded shadow-lg z-[222220]">
@@ -342,7 +323,7 @@ export default function ShelfConfigurator() {
                 />
             </div>
                     <div>
-                        <MyScene /> 
+                        kakkaa lumella
                     </div>
             <div className="absolute bottom-2 left-2 p-2 bg-white/80 text-xs rounded shadow">
                 {`Camera: x: ${coords[0]}, y: ${coords[1]}, z: ${coords[2]}`}

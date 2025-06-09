@@ -1,23 +1,19 @@
 export default function FrontPage() {
     return (
-      <div
-        className="
-          relative
-          top-5 
-          w-full         /* leveydeksi 100% */
-          h-screen       /* korkeudeksi 100vh */
-          bg-[url('/imgs/rend3.png')] /* JIT-arbitrary taustakuva */
-          bg-center      /* keskitä kuva */
-          bg-cover       /* skaalaa niin, että täyttää elementin */
-          bg-no-repeat   /* ei toisteta */
-        "
-      >
-        <h1 className="absolute top-100 left-8 text-white text-4xl font-bold">
-          Etusivu
-        </h1>
-        <img src='/imgs/rend22.png'/>
-        <img src='/imgs/rend23.png'/>
+        <div
+            className="
+                w-full         /* leveydeksi 100% */
+                h-screen       /* korkeudeksi 100vh */
+                "
+        >
 
-      </div>
+            <h1 className="absolute top-100 left-8 text-white text-4xl font-bold">
+                Etusivu
+            </h1>
+
+            <img src='/imgs/rend22.png' className="relative -top-20 w-100%" />
+            <img src='/imgs/rend23.png' />
+
+        </div>
     )
-  }
+}
