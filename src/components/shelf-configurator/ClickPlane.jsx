@@ -1,6 +1,6 @@
-import { useThree } from "@react-three/fiber"
 
-export function ClickPlane({ onClick, onHover }) {
+
+function ClickPlane({ onClick, onHover }) {
     //const { viewport } = useThree()
     return (
         <mesh
@@ -29,3 +29,4 @@ export function ClickPlane({ onClick, onHover }) {
     )
 }
 
+export default ClickPlane

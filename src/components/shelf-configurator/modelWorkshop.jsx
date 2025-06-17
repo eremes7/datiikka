@@ -15,7 +15,7 @@ export const ModelWorkshop = forwardRef(({ model, materialKey, attachments, posi
         if (!mats || prevMatsRef.current === mats) return
         prevMatsRef.current = mats
 
-
+        console.log("ÄLÄMÖÄDSÄÖHD",model)
         
         const obj = (ref && ref.current) || groupRef.current
         if (!obj || !mats) return
@@ -66,9 +66,9 @@ export const ModelWorkshop = forwardRef(({ model, materialKey, attachments, posi
         vec.z
     ]);
 
-    //console.log("MALLI => ",model)
-    //console.log("KOMPONENTTI => ",model.component)
-    //console.log(model.isSupport)
+    console.log("MALLI => ",model)
+    console.log("KOMPONENTTI => ",model.component)
+    console.log(model.isSupport)
     return (
         <group ref={groupRef} userData={model.isSupport}>
             <Component position={adjustedPosition} attachments={displayAttachments} scale={scale} {...props} />

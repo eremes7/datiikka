@@ -1,0 +1,71 @@
+import Part
+
+doc = App.ActiveDocument
+def newObject(name_str, doc):
+	newObj = doc.getObject(name_str)
+	if newObj is None:
+		newOBj = doc.addObject("Part::Feature", name_str)
+	return newObj
+
+
+
+runkoObj = newObject("runkoObj", doc)
+
+paksuus = 10
+leveys = 750
+pituus = 400
+korkeus = 813/2
+
+pohjaShape = Part.makeBox(leveys,pituus,2*paksuus)
+tasoShape = Part.makeBox(leveys,pituus,2*paksuus)
+tasoShape.translate(App.Vector(0,0,korkeus))
+
+takaShape = Part.makeBox(leveys,paksuus,korkeus-2*paksuus)
+takaShape.translate(App.Vector(0,pituus-paksuus,2*paksuus))
+
+sivuShape = Part.makeBox(paksuus, pituus-paksuus, korkeus-2*paksuus)
+sivuShape2 = Part.makeBox(paksuus, pituus-paksuus, korkeus-2*paksuus)
+sivuShape.translate(App.Vector(0,0,2*paksuus))
+sivuShape2.translate(App.Vector(leveys-paksuus,0,2*paksuus))
+
+
+runkoObj.Shape = Part.makeCompound([pohjaShape, tasoShape, takaShape, sivuShape,sivuShape2])
+
+oviObj = newObject("oviObj", doc)
+
+oviShape = Part.makeBox(leveys-3*paksuus, paksuus, (korkeus-3*paksuus)/3)
+oviShape.translate(App.Vector(1.5*paksuus, -150, 2.5*paksuus))
+
+
+cutShape = Part.makeBox(100,paksuus,20)
+cutShape.translate(App.Vector(leveys/2-50, -150, (korkeus-paksuus)/3))
+
+oviShape = oviShape.cut(cutShape)
+
+oviShape = oviShape.makeFillet(3, [oviShape.Edges[22],oviShape.Edges[21]])
+oviShape = oviShape.makeFillet(3, [oviShape.Edges[26],oviShape.Edges[28]])
+
+lokeroPohjaShape = Part.makeBox(leveys-3*paksuus, pituus-2*paksuus, 2)
+lokeroPohjaShape.translate(App.Vector(1.5*paksuus, -150+paksuus, 2.5*paksuus))
+
+lokeroSivuShape = Part.makeBox(2, pituus-2*paksuus, 80)
+lokeroSivuShape2 = Part.makeBox(2, pituus-2*paksuus, 80)
+lokeroSivuShape.translate(App.Vector(1.5*paksuus,-150+paksuus, 2.5*paksuus+2))
+lokeroSivuShape2.translate(App.Vector(leveys-1.5*paksuus-2,-150+paksuus, 2.5*paksuus+2))
+lokeroTakaShape = Part.makeBox(leveys-3*paksuus, 2, 80+2)
+lokeroTakaShape.translate(App.Vector(1.5*paksuus, pituus-150-paksuus, 2.5*paksuus))
+
+
+oviObj.Shape = Part.makeCompound([oviShape, lokeroPohjaShape, lokeroSivuShape, lokeroSivuShape2, lokeroTakaShape])
+ovi2 = oviObj.Shape.copy()
+ovi2.translate(App.Vector(0,0,(korkeus-3*paksuus)/3+2))
+ovi3 = oviObj.Shape.copy()
+ovi3.translate(App.Vector(0,0,2*(korkeus-3*paksuus)/3+4))
+oviObj.Shape = Part.makeCompound([oviObj.Shape, ovi2, ovi3])
+
+lastOvetShape = oviObj.Shape.copy()
+lastOvetShape.translate(App.Vector(0,150,0))
+
+oviObj.Shape = lastOvetShape
+
+doc.recompute()

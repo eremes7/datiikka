@@ -9,7 +9,7 @@ import { modelList } from '../components/shelf-configurator/utils/modelMap'
 import { findSupportHome } from '../components/shelf-configurator/utils/findSupportHome'
 import { findNewHome } from '../components/shelf-configurator/utils/findNewHome'
 import { isShelfSupported } from '../components/shelf-configurator/utils/isShelfSupport'
-import { ClickPlane } from '../components/shelf-configurator/ClickPane'
+import ClickPlane from '../components/shelf-configurator/ClickPlane'
 import { BackWallPlane } from '../components/shelf-configurator/BackWallPlane'
 import { AnchorMarker } from '../components/shelf-configurator/AnchorMarket'
 import { SupportSpotAssist } from '../components/shelf-configurator/SupportSpotAssist'
@@ -92,7 +92,9 @@ export default function ShelfConfigurator() {
         setLastHome(newHome)
     }, [hoverPosition, selectedModel, selectedPreview, placedModels])
 
-
+    const addPlacedModel = (model) => {
+        setPlacedModels(prev => [...prev, model]);
+    };
 
     function handleWrapperClick(e) {
         const rect = canvasWrapper.current.getBoundingClientRect()
@@ -148,7 +150,7 @@ export default function ShelfConfigurator() {
             attachments: selectedModel.isSupport ? findProperHomeForAttachments(placedModels, point, selectedPreview) : worldAttachments,
         };
         console.log("Uusi malli!: ", newModel)
-        setPlacedModels(prev => [...prev, newModel]);
+        addPlacedModel(newModel)
         setSelectedModel(null);
         setSelectedPreview(null);
     }
@@ -206,7 +208,7 @@ export default function ShelfConfigurator() {
     }
 
     return (
-        <div className="flex w-[1700px] h-[800px] bg-gray-100 left-5 mt-10 py-4">
+        <div className="flex w-10/10 h-[800px] bg-gray-100 left-5 mt-10 py-4">
 
             <div className="w-1/6">
                 <ComponentPalette models={models} onSelect={handleModelSelect} />
@@ -214,14 +216,14 @@ export default function ShelfConfigurator() {
 
             <div
                 ref={canvasWrapper}
-                className="relative w-3/4 h-[800px]"
+                className="relative w-5/9 h-[800px]"
                 onClick={handleWrapperClick}
             >
                 <Canvas
                     shadows
                     gl={{ antialias: true }}
                     camera={{ position: [0, 2.22, 3.67], fov: 50 }}
-                    className="relative outline left-20 top-0 max-w-5/8 max-h-4/6">
+                    className="relative outline left-10 top-0 max-w-6/8 max-h-4/6">
 
                     <Selection>
                         <Room backWallWidth={backWallWidth} />
@@ -316,15 +318,13 @@ export default function ShelfConfigurator() {
                     onDelete={handleDeleteModel}
                 />}
 
-            <div className="flex p-2 bg-white/80 text-xs rounded shadow">
+            <div className="relative stretch p-2 right-40 flex-1 bg-white/80 text-xs rounded shadow">
                 <PlacedModelSidebar
                     placedModels={placedModels}
-                    setPlacedModels={setPlacedModels}
+                    addPlacedModel={addPlacedModel}
                 />
             </div>
-                    <div>
-                        kakkaa lumella
-                    </div>
+
             <div className="absolute bottom-2 left-2 p-2 bg-white/80 text-xs rounded shadow">
                 {`Camera: x: ${coords[0]}, y: ${coords[1]}, z: ${coords[2]}`}
             </div>
